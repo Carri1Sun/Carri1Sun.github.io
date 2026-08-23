@@ -1,0 +1,32 @@
+scheme: Muse
+darkmode: false
+menu:
+  home: / || fa fa-home
+  about: /about/ || fa fa-user
+  archives: /archives/ || fa fa-archive
+sidebar:
+  position: left
+  display: post
+avatar:
+  url: /img/avatar.png
+  rounded: true
+  rotated: false
+social:
+  GitHub: https://github.com/Carri1Sun || fab fa-github
+footer:
+  since: 2026
+  copyright: Kaiyi
+  powered: true
+creative_commons:
+  license: by-nc-sa
+  size: small
+  sidebar: false
+  post: false
+excerpt_description: true
+read_more_btn: true
+toc:
+  enable: true
+  number: false
+  wrap: true
+  expand_all: false
+  max_depth: 3
