@@ -1,6 +1,6 @@
 # Kaiyi's Notes
 
-Kaiyi 的个人博客，使用 [Hexo](https://hexo.io/) 构建，默认采用 [Fluid](https://github.com/fluid-dev/hexo-theme-fluid) 主题，并通过 GitHub Actions 发布到 GitHub Pages。
+Kaiyi 的个人博客，使用 [Hexo](https://hexo.io/) 构建，默认采用 [NexT](https://github.com/next-theme/hexo-theme-next) 主题，并通过 GitHub Actions 发布到 GitHub Pages。
 
 ## 本地预览
 
@@ -44,8 +44,8 @@ npm run build
 
 ## 已准备的主题
 
-- **Fluid**：当前默认方案，强调文章阅读、清晰层级与克制的视觉表达。
-- **NexT**：经典极简方案，信息密度低，适合长期积累技术文章。
+- **NexT**：当前默认方案，采用经典极简布局，适合长期积累产品与技术文章。
+- **Fluid**：带有大幅头图和文章卡片，视觉识别度更强。
 - **Butterfly**：卡片化方案，视觉更活跃，适合希望首页内容更丰富的个人站。
 
 主题预览配置保存在 `theme-previews/`，正式站点的主题由根目录 `_config.yml` 中的 `theme` 字段控制。

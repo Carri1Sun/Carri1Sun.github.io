@@ -71,4 +71,4 @@ search:
   content: true
   format: html
 
-theme: fluid
+theme: next
