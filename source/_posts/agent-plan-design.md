@@ -9,7 +9,6 @@ tags:
   - 产品方法
   - AI Agent
 excerpt: 大部分 Agent 都有 Plan 模式，本文讨论一下 Plan 模式从技术和产品角度的意义是什么以及应该如何设计，如何做 trade off
-description:大部分 Agent 都有 Plan 模式，本文讨论一下 Plan 模式从技术和产品角度的意义是什么以及应该如何设计，如何做 trade off
 ---
 
 ## Plan 如何打动用户
