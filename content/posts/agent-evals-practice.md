@@ -1,7 +1,7 @@
 ---
 title: "评一个不是函数的东西：关于 Agent Evals 的一些实践判断"
 date: 2026-08-17 16:59:00
-author: Kaiyi
+author: Subaru
 categories:
   - Agent
 tags:

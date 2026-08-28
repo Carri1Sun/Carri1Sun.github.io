@@ -1,51 +1,70 @@
-# Kaiyi's Notes
+# Subaru's Notes
 
-Kaiyi 的个人博客，使用 [Hexo](https://hexo.io/) 构建，默认采用 [NexT](https://github.com/next-theme/hexo-theme-next) 主题，并通过 GitHub Actions 发布到 GitHub Pages。
+Subaru 的个人博客。不依赖 Hexo 或任何博客框架 —— 用 TypeScript 手写的静态站点生成器把 `content/` 下的 Markdown 构建成纯静态页面，通过 GitHub Actions 发布到 GitHub Pages。
 
-## 本地预览
+生成器直接以 Node 原生 TypeScript 运行（type stripping，Node 22.18+ / 24，无需编译步骤）；`npm run check` 走 `tsc --noEmit` 严格类型检查。
+
+## 目录结构
+
+```
+├── content/
+│   ├── posts/          # 博客文章（Markdown + frontmatter）
+│   └── about.md        # 关于页
+├── assets/             # 样式、脚本、头像、图片（原样复制到站点）
+├── scripts/
+│   ├── build.ts        # 静态站点生成器
+│   ├── templates.ts    # 页面 HTML 模板
+│   ├── dev.ts          # 开发服务器（监听 + 热刷新）
+│   └── lib/
+│       ├── types.ts    # 共享类型定义
+│       └── utils.ts    # frontmatter 解析、日期、摘要等工具函数
+├── site.config.ts      # 站点信息：标题、简介、导航、社交链接
+├── tsconfig.json       # 严格模式类型检查配置（noEmit）
+└── dist/               # 构建产物（gitignore，由 CI 部署）
+```
+
+## 本地开发
+
+需要 Node 24+。
 
 ```bash
 npm install
 npm run dev
 ```
 
-浏览器打开 <http://localhost:4000>。
+打开 <http://localhost:4000>。修改 `content/`、`assets/`、`scripts/` 下任意文件会自动重建并刷新页面。
 
 ## 写一篇新文章
 
-```bash
-npx hexo new post "文章标题"
+在 `content/posts/` 下新建 Markdown 文件，文件名即 URL slug（`agent-plan-design.md` → `/posts/agent-plan-design/`）：
+
+```markdown
+---
+title: 文章标题
+date: 2026-08-28 12:00:00
+categories:
+  - Agent
+tags:
+  - AI Agent
+excerpt: 一两句话的摘要，展示在首页卡片与 RSS 里。
+---
+
+正文从这里开始。
 ```
 
-Hexo 会在 `source/_posts/` 下创建 Markdown 文件。完成写作后运行 `npm run dev` 即可预览。
+`title` 和 `date` 必填；`categories`、`tags`、`excerpt`、`description`（SEO 描述）选填。
 
-## 构建静态页面
+## 构建与部署
 
 ```bash
-npm run build
+npm run build   # 产物在 dist/
 ```
 
-生成结果位于 `public/`，该目录会由 GitHub Actions 自动上传到 GitHub Pages。
+推送到 `main` 分支后，GitHub Actions（`.github/workflows/deploy.yml`）会自动构建并把 `dist/` 发布到 <https://carri1sun.github.io>。
 
-## 发布到 Carri1Sun.github.io
+## 自定义
 
-1. 在 GitHub 创建名为 `Carri1Sun.github.io` 的公开仓库。
-2. 将本地仓库连接到远程并推送：
-
-   ```bash
-   git remote add origin git@github.com:Carri1Sun/Carri1Sun.github.io.git
-   git push -u origin main
-   ```
-
-3. 打开仓库的 **Settings → Pages**，在 **Build and deployment** 中将 **Source** 设为 **GitHub Actions**。
-4. 等待仓库的 **Actions** 页面显示部署成功，然后访问 <https://Carri1Sun.github.io>。
-
-以后每次向 `main` 分支推送，工作流都会自动重新构建并发布博客。
-
-## 已准备的主题
-
-- **NexT**：当前默认方案，采用经典极简布局，适合长期积累产品与技术文章。
-- **Fluid**：带有大幅头图和文章卡片，视觉识别度更强。
-- **Butterfly**：卡片化方案，视觉更活跃，适合希望首页内容更丰富的个人站。
-
-主题预览配置保存在 `theme-previews/`，正式站点的主题由根目录 `_config.yml` 中的 `theme` 字段控制。
+- **站点信息**（标题、副标题、导航、页脚、GitHub 链接）：编辑 `site.config.ts`
+- **配色与排版**：编辑 `assets/style.css` 顶部的设计令牌（`:root` 与 `[data-theme='dark']`）
+- **页面结构**：编辑 `scripts/templates.ts`
+- **内置功能**：明暗主题、文章目录（h2/h3）、阅读进度条、代码高亮与复制、Ctrl/Cmd+K 站内搜索、RSS（`/feed.xml`）、sitemap、404 页

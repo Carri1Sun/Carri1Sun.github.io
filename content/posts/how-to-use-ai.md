@@ -1,7 +1,7 @@
 ---
 title: "怎么跟 AI 打交道"
 date: 2026-08-17 16:59:00
-author: Kaiyi
+author: Subaru
 categories:
   - AI
 tags:

@@ -1,7 +1,7 @@
 ---
 title: "Agent 的 Plan 系统的产品设计上的思考点"
 date: 2026-08-17 16:59:00
-author: Kaiyi
+author: Subaru
 categories:
   - Agent
 tags:
