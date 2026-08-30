@@ -1,12 +1,13 @@
 // 全站 HTML / XML 模板。所有动态文本经 escapeHtml 转义后输出。
 
-import { escapeHtml as esc } from './lib/utils.ts';
+import { escapeHtml as esc, tagUrl } from './lib/utils.ts';
 import type {
   AboutPage,
   ArchiveGroup,
   Post,
   SiteConfig,
   SitemapEntry,
+  TagGroup,
   TocEntry,
 } from './lib/types.ts';
 
@@ -211,7 +212,7 @@ interface PostNeighbors {
 }
 
 export function postPage(site: SiteConfig, post: Post, { prev, next }: PostNeighbors): string {
-  const tags = (post.tags ?? []).map((tag) => `<a class="tag" href="/archives/">#${esc(tag)}</a>`).join('');
+  const tags = (post.tags ?? []).map((tag) => `<a class="tag" href="${esc(tagUrl(tag))}">#${esc(tag)}</a>`).join('');
   const category = post.categories.length
     ? `<span class="chip">${esc(post.categories[0] ?? '')}</span>`
     : '';
@@ -297,6 +298,88 @@ ${sections}
     path: '/archives/',
     active: 'archives',
     bodyClass: 'page-archives',
+    content,
+  });
+}
+
+/* ---------------------------------- 标签页 ---------------------------------- */
+
+// 标签字号：1 篇 14px，每多 1 篇 +3.5px，封顶 32px（CSS 云与词云共用同一尺寸，便于对比）。
+// 用原始篇数线性递增而非 min/max 归一化：所有标签篇数接近时归一化会退化成两个字号。
+const TAG_MIN_SIZE = 14;
+const TAG_MAX_SIZE = 32;
+const TAG_SIZE_STEP = 3.5;
+
+export function tagCloudSize(count: number): number {
+  return Math.min(TAG_MAX_SIZE, TAG_MIN_SIZE + (count - 1) * TAG_SIZE_STEP);
+}
+
+/** 标签索引页：服务端渲染的 CSS 标签云 + 可切换的 d3-cloud 词云（默认 CSS 云，无 JS 也可用）。 */
+export function tagsIndexPage(site: SiteConfig, tags: TagGroup[]): string {
+  const total = tags.reduce((sum, g) => sum + g.count, 0);
+  const cloud = tags
+    .map(
+      (g) =>
+        `        <a class="cloud-tag" href="${esc(tagUrl(g.tag))}" style="font-size:${tagCloudSize(g.count)}px">#${esc(g.tag)}<span class="cloud-count">${g.count}</span></a>`
+    )
+    .join('\n');
+
+  // 词云数据内联进页面：tags.js 直接读预计算好的字号，免 fetch，也避免两处字号公式
+  const payload = JSON.stringify(
+    tags.map((g) => ({ tag: g.tag, count: g.count, size: tagCloudSize(g.count), url: tagUrl(g.tag) }))
+  ).replaceAll('<', '\\u003c');
+
+  const content = `    <header class="page-header">
+      <h1 class="page-title">标签</h1>
+      <p class="page-subtitle">共 ${tags.length} 个标签 · ${total} 篇文章</p>
+    </header>
+
+    <div class="tag-toolbar" hidden>
+      <div class="tag-mode" role="tablist" aria-label="标签展示方式">
+        <button type="button" class="tag-mode-btn is-active" data-tag-mode="cloud" role="tab" aria-selected="true">标签云</button>
+        <button type="button" class="tag-mode-btn" data-tag-mode="word" role="tab" aria-selected="false">词云</button>
+      </div>
+    </div>
+
+    <section class="tag-cloud" id="tag-cloud" aria-label="全部标签">
+${cloud}
+    </section>
+
+    <div class="word-cloud" id="word-cloud" hidden>
+      <canvas id="word-cloud-canvas">词云需要浏览器支持 Canvas，可切换回标签云模式。</canvas>
+    </div>
+
+    <script type="application/json" id="tag-cloud-data">${payload}</script>
+    <script src="/assets/tags.js" defer></script>`;
+
+  return layout(site, {
+    title: `标签 · ${site.title}`,
+    description: `按标签浏览全部 ${total} 篇文章`,
+    path: '/tags/',
+    active: 'tags',
+    bodyClass: 'page-tags',
+    content,
+  });
+}
+
+/** 单标签页：该标签下的文章列表，复用文章卡片。 */
+export function tagPage(site: SiteConfig, group: TagGroup): string {
+  const cards = group.posts.map(postCard).join('\n');
+  const content = `    <header class="page-header">
+      <h1 class="page-title">#${esc(group.tag)}</h1>
+      <p class="page-subtitle">共 ${group.count} 篇文章</p>
+    </header>
+    <div class="post-list tag-post-list">
+${cards}
+    </div>
+    <a class="more-link tag-back" href="/tags/">← 全部标签</a>`;
+
+  return layout(site, {
+    title: `#${group.tag} · ${site.title}`,
+    description: `${group.tag} 标签下的 ${group.count} 篇文章`,
+    path: tagUrl(group.tag),
+    active: 'tags',
+    bodyClass: 'page-tag',
     content,
   });
 }

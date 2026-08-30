@@ -3,7 +3,7 @@
 export interface SiteNavItem {
   label: string;
   href: string;
-  /** 当前页高亮标记：home / archives / about */
+  /** 当前页高亮标记：home / archives / tags / about */
   key: string;
 }
 
@@ -85,6 +85,13 @@ export interface AboutPage {
 
 export interface ArchiveGroup {
   year: string;
+  posts: Post[];
+}
+
+/** 标签聚合条目（标签索引页与单标签页共用）。 */
+export interface TagGroup {
+  tag: string;
+  count: number;
   posts: Post[];
 }
 

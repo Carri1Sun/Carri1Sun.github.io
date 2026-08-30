@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "node scripts/dev.ts",
     "build": "node scripts/build.ts",
+    "new": "node scripts/new.ts",
     "preview": "node scripts/build.ts && node scripts/dev.ts",
     "check": "tsc --noEmit"
   },

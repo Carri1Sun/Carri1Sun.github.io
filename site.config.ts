@@ -29,6 +29,7 @@ const site = {
   nav: [
     { label: '首页', href: '/', key: 'home' },
     { label: '归档', href: '/archives/', key: 'archives' },
+    { label: '标签', href: '/tags/', key: 'tags' },
     { label: '关于', href: '/about/', key: 'about' },
   ],
   // 首页最多展示的文章数，更多文章指向归档页

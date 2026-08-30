@@ -160,3 +160,12 @@ export function truncate(text: string, max = 160): string {
   if (text.length <= max) return text;
   return `${text.slice(0, max).trimEnd()}…`;
 }
+
+/**
+ * 标签页地址：目录名用原始标签（dev 服务器与 GitHub Pages 都按解码后的名字查找，
+ * 中文标签因此可直接落成目录），href 一律 encodeURIComponent。
+ * 标签里不允许出现 "/"（groupTags 会校验）。
+ */
+export function tagUrl(tag: string): string {
+  return `/tags/${encodeURIComponent(tag)}/`;
+}

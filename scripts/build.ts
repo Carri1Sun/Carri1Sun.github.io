@@ -22,6 +22,7 @@ import {
   slugify,
   truncate,
   stripTags,
+  tagUrl,
 } from './lib/utils.ts';
 import type {
   AboutPage,
@@ -29,6 +30,7 @@ import type {
   BuildResult,
   Post,
   SitemapEntry,
+  TagGroup,
   TocEntry,
 } from './lib/types.ts';
 
@@ -164,6 +166,22 @@ function groupByYear(posts: Post[]): ArchiveGroup[] {
   return groups;
 }
 
+/** 标签聚合：按篇数降序，同篇数按名称排序（Node 自带 ICU，中文按拼音）。 */
+function groupTags(posts: Post[]): TagGroup[] {
+  const map = new Map<string, Post[]>();
+  for (const post of posts) {
+    for (const tag of post.tags) {
+      if (tag.includes('/')) throw new Error(`标签含 "/"，无法生成目录：${tag}`);
+      const list = map.get(tag);
+      if (list) list.push(post);
+      else map.set(tag, [post]);
+    }
+  }
+  return [...map.entries()]
+    .map(([tag, list]) => ({ tag, count: list.length, posts: list }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, 'zh-Hans-CN'));
+}
+
 const livereloadSnippet =
   '<script>(function(){var es=new EventSource("/__livereload");es.onmessage=function(e){if(e.data==="reload")location.reload();};})();</script>';
 
@@ -215,6 +233,13 @@ export async function buildSite({
   await writePage(path.join(dist, 'about', 'index.html'), t.aboutPage(site, about));
   await writePage(path.join(dist, '404.html'), t.notFoundPage(site));
 
+  // 标签索引页 + 每个标签一个目录页（目录名用原始标签，见 utils.tagUrl）
+  const tags = groupTags(posts);
+  await writePage(path.join(dist, 'tags', 'index.html'), t.tagsIndexPage(site, tags));
+  for (const group of tags) {
+    await writePage(path.join(dist, 'tags', group.tag, 'index.html'), t.tagPage(site, group));
+  }
+
   for (const post of withNeighbors) {
     await writePage(
       path.join(dist, 'posts', post.slug, 'index.html'),
@@ -226,8 +251,14 @@ export async function buildSite({
   const sitemapEntries: SitemapEntry[] = [
     { path: '/', date: posts[0]?.date ?? null },
     { path: '/archives/' },
+    { path: '/tags/' },
     { path: '/about/', date: parseDate('2026-08-24 00:00:00', site.timezone) },
     ...withNeighbors.map((post) => ({ path: post.url, date: post.date })),
+    // 标签页的 lastmod 用该标签下最新一篇的日期
+    ...tags.map((group) => ({
+      path: tagUrl(group.tag),
+      date: group.posts[0]?.date ?? null,
+    })),
   ];
   await writePage(path.join(dist, 'sitemap.xml'), t.sitemapXml(site, sitemapEntries));
 
