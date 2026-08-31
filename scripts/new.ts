@@ -40,9 +40,10 @@ function nowInTimezone(timezone: string): string {
   ].join(' ');
 }
 
-const filePath = path.resolve(import.meta.dirname, '..', 'content', 'posts', `${slug}.md`);
+const projectRoot = path.resolve(import.meta.dirname, '..');
+const filePath = path.resolve(projectRoot, 'content', 'posts', `${slug}.md`);
 if (existsSync(filePath)) {
-  console.error(`已存在同名文章：${path.relative(process.cwd(), filePath)}（如需新文章请换个文件名）`);
+  console.error(`已存在同名文章：${path.relative(projectRoot, filePath)}（如需新文章请换个文件名）`);
   process.exit(1);
 }
 
@@ -63,5 +64,5 @@ const frontmatter = [
 await fs.mkdir(path.dirname(filePath), { recursive: true });
 await fs.writeFile(filePath, frontmatter);
 
-console.log(`已创建：${path.relative(process.cwd(), filePath)}`);
+console.log(`已创建：${path.relative(projectRoot, filePath)}`);
 console.log(`写完后访问 /posts/${slug}/ 预览（dev 服务器会自动重建）。`);
