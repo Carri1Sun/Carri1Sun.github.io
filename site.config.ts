@@ -8,7 +8,7 @@ const site = {
   // 作者名
   author: 'Kaiyi',
   // 首页副标题 / 个人签名
-  subtitle: '无所不知的 AI 把绝大部分专业技能的掌握成本降低了几百倍，我想借此亲手把好玩的事情都自己做一遍。',
+  subtitle: '我想借此亲手把好玩的事情都自己做一遍。',
   // 站点描述（SEO / RSS）
   description: 'Kaiyi 的个人博客，记录产品、工程与 Agent 实践。',
   // SEO 关键词

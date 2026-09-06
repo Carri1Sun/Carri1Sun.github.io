@@ -214,10 +214,7 @@ function bookCover(site: SiteConfig, post: Post, index: number): string {
 
 export function homePage(site: SiteConfig, posts: Post[], total: number): string {
   const content = `    <section class="press-intro">
-      <div class="press-heading">
-        <p class="press-eyebrow">${esc(site.author)} 的个人文集</p>
-        <h1>把好奇，<br>做成<span>具体的东西。</span></h1>
-      </div>
+      <h1 class="sr-only">${esc(site.title)}</h1>
       <div class="press-description">
         <p>${esc(site.subtitle)}</p>
         <a class="press-about" href="/about/">关于我 ${icons.arrow}</a>
