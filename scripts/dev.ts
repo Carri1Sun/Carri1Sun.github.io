@@ -5,7 +5,10 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
-import { buildSite } from './build.ts';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const runBuild = promisify(execFile);
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const distDir = path.resolve(projectRoot, 'dist');
@@ -33,16 +36,33 @@ const MIME: Record<string, string> = {
 /* ---------------------------------- 构建与监听 ---------------------------------- */
 
 let rebuildTimer: NodeJS.Timeout | null = null;
+let building = false;
+let pendingReason: string | null = null;
 const liveSockets = new Set<http.ServerResponse>();
 
 async function rebuild(reason: string): Promise<void> {
+  if (building) {
+    pendingReason = reason;
+    return;
+  }
+  building = true;
   const started = Date.now();
   try {
-    await buildSite({ livereload: true, log: () => {} });
+    // 每次用独立进程加载模板和配置，避免 ESM 模块缓存写回旧页面。
+    await runBuild(process.execPath, [path.join(projectRoot, 'scripts/build.ts'), '--livereload'], {
+      cwd: projectRoot,
+    });
     console.log(`[${reason}] 重建完成，用时 ${Date.now() - started}ms`);
     for (const res of liveSockets) res.write('data: reload\n\n');
   } catch (error) {
     console.error(`[${reason}] 构建失败：`, error);
+  } finally {
+    building = false;
+    if (pendingReason !== null) {
+      const nextReason = pendingReason;
+      pendingReason = null;
+      void rebuild(nextReason);
+    }
   }
 }
 

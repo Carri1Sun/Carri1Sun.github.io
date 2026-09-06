@@ -292,7 +292,7 @@ const isMain =
   process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (isMain) {
   const started = Date.now();
-  buildSite({ log: (message) => console.log(message) }).then(() => {
+  buildSite({ livereload: process.argv.includes('--livereload'), log: (message) => console.log(message) }).then(() => {
     console.log(`构建完成，用时 ${Date.now() - started}ms`);
   });
 }

@@ -56,9 +56,18 @@ main{flex:1}
 .icon-button:hover{color:var(--accent);background:var(--accent-soft)}
 html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moon{display:none}
 .theme-icon{display:flex}
-.press-intro{padding:40px 0;border-bottom:1px solid var(--border)}
-.press-description{max-width:100%}
-.press-description p{font-size:15px;line-height:2.05;margin:0 0 20px;color:var(--muted)}
+.press-intro{display:flex;align-items:center;gap:24px;padding:40px 0;border-bottom:1px solid var(--border)}
+.press-description{max-width:100%;min-width:0}
+.press-description p{font-family:var(--font-serif);font-size:30px;line-height:1.55;margin:0 0 8px;color:var(--heading);text-wrap:pretty}
+.press-description .slogan-hand{color:var(--accent)}
+.avatar-coin{flex:0 0 72px;width:72px;height:72px;padding:0;border:0;border-radius:50%;background:none;perspective:600px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.avatar-coin:disabled{cursor:default}
+.avatar-coin-inner{position:relative;display:block;width:100%;height:100%;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.22,1,.36,1)}
+.avatar-coin-front,.avatar-coin-back{position:absolute;inset:0;display:grid;place-items:center;border-radius:50%;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;box-shadow:0 0 0 1px var(--border)}
+.avatar-coin-front img,.avatar-coin-back img{display:block;width:100%;height:100%;object-fit:cover}
+.avatar-coin-back{transform:rotateY(180deg)}
+.avatar-coin.is-flipped .avatar-coin-inner{transform:rotateY(180deg)}
+@media(hover:hover) and (pointer:fine){.avatar-coin:not(:disabled):not(.is-flipped):hover .avatar-coin-inner{transform:rotateY(-15deg) rotateZ(-4deg)}}
 .press-about{font-size:13px;display:inline-flex;align-items:center;gap:26px;color:var(--heading)}
 .press-about svg,.press-archive svg{transition:transform .2s}
 .press-about:hover svg,.press-archive:hover svg{transform:translateX(4px)}
@@ -1189,8 +1198,9 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 @media(max-width:640px){
  .container{padding:0 24px}.header-inner{height:78px;gap:8px}.site-title{font-size:19px;gap:5px}.site-title-mark{font-size:29px;width:25px}
  .site-nav{gap:10px}.nav-link{font-size:12px}.icon-button{width:28px;height:30px}.site-nav .nav-link:first-child{display:none}
- .press-intro{padding:28px 0}
- .press-description p{font-size:14px;margin-bottom:14px}
+ .press-intro{padding:28px 0;gap:16px}
+ .avatar-coin{flex-basis:48px;width:48px;height:48px}
+ .press-description p{font-size:23px;margin-bottom:6px}
  .library-heading{margin-bottom:30px}.library-heading>span{font-size:10px}.bookshelf{gap:34px 22px}
  .book-stage{padding:6px 1px 25px 8px}.book{height:260px}.book-front{padding:16px 12px 14px 18px}.book-title{font-size:19px;margin-top:20px}
  .book-top{font-size:6px;gap:3px}.book-bottom{font-size:8px}.book-excerpt{font-size:12px;-webkit-line-clamp:3}.book-caption{font-size:9px;gap:3px}.book-caption svg{display:none}
@@ -1259,4 +1269,43 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* 减少动态效果时直接切换正反面，不旋转。 */
+@media (prefers-reduced-motion: reduce) {
+  .avatar-coin .avatar-coin-inner,
+  .avatar-coin .avatar-coin-back { transform: none !important; }
+  .avatar-coin-back { visibility: hidden; }
+  .avatar-coin.is-flipped .avatar-coin-front { visibility: hidden; }
+  .avatar-coin.is-flipped .avatar-coin-back { visibility: visible; }
+}
+
+/* 按住头像旋转；烟花限定在局部，不覆盖交互或撑大页面。 */
+.avatar-coin { position: relative; touch-action: none; user-select: none; transition: scale .2s ease; }
+@media (hover: hover) and (pointer: fine) {
+  .avatar-coin:not(:disabled):hover { scale: 1.06; }
+}
+.avatar-coin img { pointer-events: none; -webkit-user-drag: none; }
+.avatar-coin.is-spinning .avatar-coin-inner { transition: none; }
+.avatar-coin:focus-visible { outline: none; }
+.avatar-coin .avatar-coin-front,
+.avatar-coin .avatar-coin-back {
+  box-shadow: 0 0 0 4px var(--bg), 0 0 0 6px var(--brand);
+}
+.avatar-coin:focus-visible .avatar-coin-front,
+.avatar-coin:focus-visible .avatar-coin-back {
+  outline: 2px dashed var(--accent);
+  outline-offset: 9px;
+}
+.avatar-sparks {
+  position: absolute;
+  inset: -125px;
+  overflow: clip;
+  pointer-events: none;
+  z-index: 2;
+}
+.avatar-pixel { position: absolute; left: 50%; top: 50%; pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .avatar-sparks { display: none; }
+  .avatar-coin:not(:disabled):hover { scale: 1; }
 }

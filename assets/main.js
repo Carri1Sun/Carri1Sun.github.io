@@ -4,6 +4,145 @@
 (() => {
   'use strict';
 
+  /* ---------------------------------- 作者头像彩蛋 ---------------------------------- */
+
+  const avatarCoin = document.querySelector('[data-avatar-flip]');
+  if (avatarCoin) {
+    const inner = avatarCoin.querySelector('.avatar-coin-inner');
+    const sparks = avatarCoin.querySelector('.avatar-sparks');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const particles = new Set();
+    let holding = false;
+    let frame = 0;
+    let angle = 0;
+    let previousTime = 0;
+    let lastBurst = 0;
+    let lastInput = -Infinity;
+    let settleTimer;
+    let activePointer = null;
+
+    function burst() {
+      if (reducedMotion.matches || particles.size >= 60) return;
+      const colors = ['#ff0000', '#ff5546', '#ffbd69', '#fff1ce'];
+      for (let i = 0; i < 8 && particles.size < 60; i += 1) {
+        const pixel = document.createElement('span');
+        pixel.className = 'avatar-pixel';
+        const direction = Math.random() * Math.PI * 2;
+        const radius = avatarCoin.clientWidth / 2;
+        const distance = 35 + Math.random() * 55;
+        const x = Math.cos(direction);
+        const y = Math.sin(direction);
+        pixel.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        pixel.style.width = pixel.style.height = `${Math.random() > .7 ? 5 : 3}px`;
+        sparks.appendChild(pixel);
+        const animation = pixel.animate([
+          { transform: `translate(${Math.round(x * radius)}px, ${Math.round(y * radius)}px)`, opacity: 1 },
+          { transform: `translate(${Math.round(x * (radius + distance))}px, ${Math.round(y * (radius + distance) + 12)}px)`, opacity: .9, offset: .65 },
+          { transform: `translate(${Math.round(x * (radius + distance * 1.15))}px, ${Math.round(y * (radius + distance * 1.15) + 36)}px)`, opacity: 0 },
+        ], { duration: 650 + Math.random() * 250, easing: 'cubic-bezier(.15,.6,.35,1)' });
+        const particle = { pixel, animation };
+        particles.add(particle);
+        animation.finished.catch(() => {}).finally(() => {
+          pixel.remove();
+          particles.delete(particle);
+        });
+      }
+    }
+
+    function tick(time) {
+      if (!holding) return;
+      angle += Math.min(time - previousTime, 50) * 1.2;
+      previousTime = time;
+      inner.style.transform = `rotateY(${angle}deg)`;
+      if (time - lastBurst >= 140) {
+        burst();
+        lastBurst = time;
+      }
+      frame = requestAnimationFrame(tick);
+    }
+
+    function start() {
+      if (holding) return;
+      clearTimeout(settleTimer);
+      holding = true;
+      avatarCoin.classList.add('is-spinning');
+      avatarCoin.setAttribute('aria-pressed', 'true');
+      previousTime = performance.now();
+      lastBurst = previousTime;
+      if (!reducedMotion.matches) {
+        burst();
+        frame = requestAnimationFrame(tick);
+      }
+    }
+
+    function stop() {
+      if (!holding) return;
+      holding = false;
+      cancelAnimationFrame(frame);
+      avatarCoin.classList.remove('is-spinning');
+      avatarCoin.setAttribute('aria-pressed', 'false');
+      // 沿当前方向收尾到完整头像，避免松手时停在侧面或突然倒转。
+      angle = Math.ceil(angle / 180) * 180;
+      inner.style.transform = `rotateY(${angle}deg)`;
+    }
+
+    function cleanup() {
+      stop();
+      activePointer = null;
+      clearTimeout(settleTimer);
+      for (const { pixel, animation } of particles) {
+        animation.cancel();
+        pixel.remove();
+      }
+      particles.clear();
+    }
+
+    avatarCoin.disabled = false;
+    avatarCoin.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0 || activePointer !== null) return;
+      event.preventDefault();
+      lastInput = performance.now();
+      activePointer = event.pointerId;
+      avatarCoin.focus({ preventScroll: true });
+      avatarCoin.setPointerCapture(event.pointerId);
+      start();
+    });
+    const releasePointer = (event) => {
+      if (event.pointerId !== activePointer) return;
+      activePointer = null;
+      stop();
+    };
+    avatarCoin.addEventListener('pointerup', releasePointer);
+    avatarCoin.addEventListener('pointercancel', releasePointer);
+    avatarCoin.addEventListener('lostpointercapture', releasePointer);
+    avatarCoin.addEventListener('contextmenu', (event) => event.preventDefault());
+    avatarCoin.addEventListener('keydown', (event) => {
+      if (event.key !== ' ' && event.key !== 'Enter') return;
+      event.preventDefault();
+      lastInput = performance.now();
+      start();
+    });
+    avatarCoin.addEventListener('keyup', (event) => {
+      if (event.key !== ' ' && event.key !== 'Enter') return;
+      event.preventDefault();
+      lastInput = performance.now();
+      stop();
+    });
+    // 兼容辅助技术直接触发 click，同时避免重复处理指针和键盘的 click。
+    avatarCoin.addEventListener('click', (event) => {
+      if (event.detail !== 0 || performance.now() - lastInput < 500) return;
+      start();
+      settleTimer = setTimeout(stop, 300);
+    });
+    avatarCoin.addEventListener('blur', cleanup);
+    window.addEventListener('blur', cleanup);
+    window.addEventListener('pagehide', cleanup);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) cleanup();
+    });
+    reducedMotion.addEventListener('change', cleanup);
+  }
+
   /* ---------------------------------- 明暗主题 ---------------------------------- */
 
   const THEME_KEY = 'theme';

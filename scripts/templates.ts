@@ -215,8 +215,15 @@ function bookCover(site: SiteConfig, post: Post, index: number): string {
 export function homePage(site: SiteConfig, posts: Post[], total: number): string {
   const content = `    <section class="press-intro">
       <h1 class="sr-only">${esc(site.title)}</h1>
+      <button class="avatar-coin" type="button" data-avatar-flip aria-label="按住 ${esc(site.author)} 的头像旋转并放出像素烟花" aria-pressed="false" disabled>
+        <span class="avatar-coin-inner" aria-hidden="true">
+          <span class="avatar-coin-front"><img src="${esc(site.avatar)}" alt="" width="72" height="72"></span>
+          <span class="avatar-coin-back"><img src="${esc(site.avatar)}" alt="" width="72" height="72"></span>
+        </span>
+        <span class="avatar-sparks" aria-hidden="true"></span>
+      </button>
       <div class="press-description">
-        <p>${esc(site.subtitle)}</p>
+        <p>${sloganHtml(site.subtitle)}</p>
         <a class="press-about" href="/about/">关于我 ${icons.arrow}</a>
       </div>
     </section>
