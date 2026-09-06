@@ -29,6 +29,7 @@ import type {
   ArchiveGroup,
   BuildResult,
   Post,
+  Note,
   SitemapEntry,
   TagGroup,
   TocEntry,
@@ -137,6 +138,23 @@ function toList(value: unknown): string[] {
   return Array.isArray(value) ? value.map(String) : [String(value)];
 }
 
+async function loadNotes(renderer: Renderer): Promise<Note[]> {
+  const dir = path.join(projectRoot, 'content', 'notes');
+  await fs.mkdir(dir, { recursive: true });
+  const files = (await fs.readdir(dir)).filter((name) => name.endsWith('.md'));
+  const notes: Note[] = [];
+  for (const file of files) {
+    const { data, body } = parseFrontmatter(await fs.readFile(path.join(dir, file), 'utf8'));
+    const date = parseDate(data.date, site.timezone);
+    if (!date) throw new Error(`随笔 ${file} 缺少可解析的 date 字段`);
+    const slug = file.replace(/\.md$/, '');
+    const { html } = renderer.render(body);
+    notes.push({ slug, url: `/notes/#${encodeURIComponent(slug)}`, date, html,
+      excerpt: truncate(plainText(html), 180), sample: String(data.sample) === 'true' });
+  }
+  return notes.sort((a, b) => b.date.sortKey.localeCompare(a.date.sortKey) || a.slug.localeCompare(b.slug));
+}
+
 async function loadAbout(renderer: Renderer): Promise<AboutPage> {
   const raw = await fs.readFile(path.join(projectRoot, 'content', 'about.md'), 'utf8');
   const { data, body } = parseFrontmatter(raw);
@@ -210,6 +228,7 @@ export async function buildSite({
   const renderer = createRenderer();
 
   const posts = await loadPosts(renderer);
+  const notes = await loadNotes(renderer);
   const about = await loadAbout(renderer);
 
   // 上一篇 = 更早的文章，下一篇 = 更新的文章
@@ -224,13 +243,14 @@ export async function buildSite({
 
   await writePage(
     path.join(dist, 'index.html'),
-    t.homePage(site, posts.slice(0, site.postsPerPage), posts.length)
+    t.homePage(site, posts.slice(0, Math.min(3, site.postsPerPage)), posts.length, notes)
   );
   await writePage(
     path.join(dist, 'archives', 'index.html'),
     t.archivePage(site, groupByYear(posts))
   );
   await writePage(path.join(dist, 'about', 'index.html'), t.aboutPage(site, about));
+  await writePage(path.join(dist, 'notes', 'index.html'), t.notesPage(site, notes));
   await writePage(path.join(dist, '404.html'), t.notFoundPage(site));
 
   // 标签索引页 + 每个标签一个目录页（目录名用原始标签，见 utils.tagUrl）
@@ -251,6 +271,7 @@ export async function buildSite({
   const sitemapEntries: SitemapEntry[] = [
     { path: '/', date: posts[0]?.date ?? null },
     { path: '/archives/' },
+    { path: '/notes/', date: notes[0]?.date ?? null },
     { path: '/tags/' },
     { path: '/about/', date: parseDate('2026-08-24 00:00:00', site.timezone) },
     ...withNeighbors.map((post) => ({ path: post.url, date: post.date })),
@@ -265,7 +286,7 @@ export async function buildSite({
   await writePage(
     path.join(dist, 'search.json'),
     JSON.stringify(
-      withNeighbors.map((post) => ({
+      [...withNeighbors.map((post) => ({
         title: post.title,
         url: post.url,
         date: post.date.iso,
@@ -273,7 +294,10 @@ export async function buildSite({
         tags: post.tags,
         excerpt: post.excerpt,
         content: plainText(post.html).slice(0, 20000),
-      }))
+      })), ...notes.map((note) => ({
+        title: truncate(note.excerpt, 40), url: note.url, date: note.date.iso,
+        category: '随笔', tags: [], excerpt: note.excerpt, content: plainText(note.html),
+      }))]
     )
   );
 

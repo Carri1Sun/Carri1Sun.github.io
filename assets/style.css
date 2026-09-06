@@ -1224,8 +1224,6 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
     view-transition-name: site-header;
   }
 
-  .book-title,
-  .post-card-title,
   .post-title {
     view-transition-name: var(--article-transition, none);
   }
@@ -1308,4 +1306,70 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 @media (prefers-reduced-motion: reduce) {
   .avatar-sparks { display: none; }
   .avatar-coin:not(:disabled):hover { scale: 1; }
+}
+
+/* 书架与随笔：三本书、三张纸，分别通向完整收藏。 */
+.bookshelf { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; }
+.bookshelf .book-stage { max-width: 300px; margin-inline: auto; }
+.bookshelf .book { height: 365px; }
+.bookshelf .book-title { font-size: 25px; }
+.shelf-year { margin-bottom: 72px; }
+.shelf-year > .library-heading { border-bottom: 1px solid var(--border); padding-bottom: 18px; }
+.shelf-year > .library-heading h2 { font: 32px var(--font-serif); }
+.home-notes { padding: 0 0 70px; }
+.note-papers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; }
+.note-paper { min-width: 0; background: var(--surface); border: 1px solid var(--border); box-shadow: 2px 4px 8px #0000000a; transform: rotate(-1deg); transition: transform .22s ease, box-shadow .22s ease; }
+.note-paper:nth-child(even) { transform: rotate(1deg); }
+.note-paper-link { display: flex; flex-direction: column; min-height: 250px; padding: 25px; color: var(--text); }
+.note-paper-meta,.note-item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 11px; color: var(--muted); }
+.note-paper-meta time { font-family: var(--font-mono); }
+.note-sample { font-size: 10px; color: var(--muted); }
+.note-paper-text { margin: 25px 0; font: 18px/1.9 var(--font-serif); color: var(--heading); display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+.note-paper-read { display: flex; align-items: center; justify-content: space-between; margin-top: auto; color: var(--muted); font-size: 11px; }
+.note-paper-read svg { width: 15px; height: 15px; }
+.note-paper-link:focus-visible { outline-offset: 5px; }
+.notes-list { max-width: 800px; padding-bottom: 70px; }
+.note-item { padding: 32px 0; border-bottom: 1px solid var(--border); scroll-margin-top: 110px; }
+.note-item:first-child { padding-top: 0; }
+.note-item-meta { margin-bottom: 18px; }
+.note-item-meta a { color: var(--muted); }
+.note-item-meta a:hover { color: var(--accent); }
+.note-item:target { border-bottom-color: var(--accent); }
+.note-content p { margin: 0 0 1em; }
+.note-content p:last-child { margin-bottom: 0; }
+.notes-empty { color: var(--muted); }
+@media (hover: hover) and (pointer: fine) {
+  .note-paper:hover { transform: rotate(0) translateY(-4px); box-shadow: 3px 8px 18px #00000010; }
+  .note-paper:hover .note-paper-read { color: var(--accent); }
+}
+@media (max-width: 1050px) {
+  .bookshelf { gap: 32px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .note-papers { gap: 20px; }
+  .note-paper-link { padding: 20px; }
+  .note-paper-text { font-size: 16px; }
+}
+@media (max-width: 640px) {
+  .header-inner { height: auto; min-height: 78px; flex-wrap: wrap; padding-top: 16px; padding-bottom: 14px; gap: 10px 20px; }
+  .site-nav { gap: 12px; flex-wrap: wrap; }
+  .bookshelf { gap: 34px 22px; }
+  .bookshelf .book { height: 260px; }
+  .bookshelf .book-title { font-size: 19px; }
+  .note-papers { grid-template-columns: 1fr; gap: 24px; }
+  .note-paper-link { min-height: 190px; padding: 24px; }
+  .note-paper-text { margin: 20px 0; font-size: 18px; }
+  .home-notes,.notes-list { padding-bottom: 45px; }
+  .shelf-year { margin-bottom: 50px; }
+}
+@media (max-width: 380px) {
+  .bookshelf .book { height: 240px; }
+  .bookshelf .book-title { font-size: 17px; }
+}
+
+.library-actions { display: flex; align-items: center; justify-content: flex-end; gap: 20px; font-size: 11px; color: var(--muted); }
+.library-more { display: inline-flex; align-items: center; gap: 7px; color: var(--heading); white-space: nowrap; }
+.library-more svg { width: 14px; height: 14px; transition: transform .2s ease; }
+.library-more:hover svg { transform: translateX(3px); }
+@media (max-width: 640px) {
+  .library-actions { gap: 10px; font-size: 10px; }
+  .library-more { gap: 4px; }
 }

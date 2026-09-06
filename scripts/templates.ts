@@ -5,6 +5,7 @@ import type {
   AboutPage,
   ArchiveGroup,
   Post,
+  Note,
   SiteConfig,
   SitemapEntry,
   TagGroup,
@@ -212,7 +213,7 @@ function bookCover(site: SiteConfig, post: Post, index: number): string {
   </article>`;
 }
 
-export function homePage(site: SiteConfig, posts: Post[], total: number): string {
+export function homePage(site: SiteConfig, posts: Post[], total: number, notes: Note[] = []): string {
   const content = `    <section class="press-intro">
       <h1 class="sr-only">${esc(site.title)}</h1>
       <button class="avatar-coin" type="button" data-avatar-flip aria-label="按住 ${esc(site.author)} 的头像旋转并放出像素烟花" aria-pressed="false" disabled>
@@ -228,9 +229,12 @@ export function homePage(site: SiteConfig, posts: Post[], total: number): string
       </div>
     </section>
     <section class="press-library" aria-labelledby="library-title">
-      <div class="library-heading"><h2 id="library-title">最近在想</h2><span>${String(total).padStart(2, '0')} 篇文章 · 持续更新</span></div>
+      <div class="library-heading"><h2 id="library-title">最近的文章</h2><div class="library-actions"><span>${String(total).padStart(2, '0')} 篇文章</span><a class="library-more" href="/archives/">查看更多文章 ${icons.arrow}</a></div></div>
       <div class="bookshelf">${posts.map((post, index) => bookCover(site, post, index)).join('\n')}</div>
-      <a class="press-archive" href="/archives/">全部文章 ${icons.arrow}</a>
+    </section>
+    <section class="home-notes" aria-labelledby="notes-title">
+      <div class="library-heading"><h2 id="notes-title">最近的随笔</h2><div class="library-actions"><span>${String(notes.length).padStart(2, '0')} 条随笔</span><a class="library-more" href="/notes/">查看全部随笔 ${icons.arrow}</a></div></div>
+      <div class="note-papers">${notes.slice(0, 3).map(notePaper).join('\n') || '<p class="notes-empty">还没有随笔。</p>'}</div>
     </section>`;
   return layout(site, {
     title: site.title, description: `${site.subtitle} ${site.description}`,
@@ -308,46 +312,41 @@ ${navLink(next, '下一篇 →')}
 /* ---------------------------------- 归档页 ---------------------------------- */
 
 export function archivePage(site: SiteConfig, groups: ArchiveGroup[]): string {
-  const total = groups.reduce((sum, g) => sum + g.posts.length, 0);
-  const sections = groups
-    .map(
-      (group) => `      <section class="archive-group">
-        <h2 class="archive-year">${group.year}<span class="archive-count">${group.posts.length}</span></h2>
-        <ul class="archive-list">
-${group.posts
-  .map(
-    (post) => `          <li class="archive-item">
-            <time datetime="${esc(post.date.datetime)}">${esc(post.date.short)}</time>
-            <a class="archive-link" href="${esc(post.url)}">${esc(post.title)}</a>
-            ${
-              post.categories.length
-                ? `<span class="chip">${esc(post.categories[0] ?? '')}</span>`
-                : ''
-            }
-          </li>`
-  )
-  .join('\n')}
-        </ul>
-      </section>`
-    )
-    .join('\n');
-
-  const content = `    <header class="page-header">
-      <p class="page-kicker">LIBRARY / BY YEAR</p>
-      <h1 class="page-title">归档</h1>
-      <p class="page-subtitle">共 ${total} 篇文章</p>
-    </header>
-    <div class="archive">
-${sections}
-    </div>`;
-
+  const total = groups.reduce((sum, group) => sum + group.posts.length, 0);
+  let index = 0;
+  const sections = groups.map((group) => `<section class="shelf-year" aria-labelledby="year-${esc(group.year)}">
+    <div class="library-heading"><h2 id="year-${esc(group.year)}">${esc(group.year)}</h2><span>${group.posts.length} 篇文章</span></div>
+    <div class="bookshelf">${group.posts.map((post) => bookCover(site, post, index++)).join('\n')}</div>
+  </section>`).join('\n');
   return layout(site, {
-    title: `归档 · ${site.title}`,
-    description: site.description,
-    path: '/archives/',
-    active: 'archives',
-    bodyClass: 'page-archives',
-    content,
+    title: `文章 · ${site.title}`, description: site.description,
+    path: '/archives/', active: 'archives', bodyClass: 'page-archives',
+    content: `<header class="page-header"><h1 class="page-title">文章</h1><p class="page-subtitle">共 ${total} 篇文章 · 按年份收藏</p></header>${sections}`,
+  });
+}
+
+/* ---------------------------------- 随笔 ---------------------------------- */
+
+function notePaper(note: Note): string {
+  return `<article class="note-paper">
+    <a class="note-paper-link" href="${esc(note.url)}" aria-label="阅读 ${esc(note.date.display)} 的随笔">
+      <div class="note-paper-meta"><time datetime="${esc(note.date.datetime)}">${esc(note.date.iso)}</time>${note.sample ? '<span class="note-sample">测试随笔</span>' : ''}</div>
+      <p class="note-paper-text">${esc(note.excerpt)}</p>
+      <span class="note-paper-read">读这条 ${icons.arrow}</span>
+    </a>
+  </article>`;
+}
+
+export function notesPage(site: SiteConfig, notes: Note[]): string {
+  const list = notes.map((note) => `<article class="note-item" id="${esc(note.slug)}" aria-label="${esc(note.date.display)} 的随笔">
+    <div class="note-item-meta"><a href="${esc(note.url)}"><time datetime="${esc(note.date.datetime)}">${esc(note.date.displayFull)}</time></a>${note.sample ? '<span class="note-sample">测试随笔</span>' : ''}</div>
+    <div class="post-content note-content">${note.html}</div>
+  </article>`).join('\n');
+  return layout(site, {
+    title: `随笔 · ${site.title}`, description: `${site.author} 的随笔，记录零散的想法与日常。`,
+    path: '/notes/', active: 'notes', bodyClass: 'page-notes',
+    content: `<header class="page-header"><h1 class="page-title">随笔</h1><p class="page-subtitle">共 ${notes.length} 条 · 随手记下的想法与日常</p></header>
+    <div class="notes-list">${list || '<p class="notes-empty">还没有随笔。</p>'}</div>`,
   });
 }
 

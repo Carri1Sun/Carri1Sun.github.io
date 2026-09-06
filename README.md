@@ -68,3 +68,19 @@ npm run build   # 产物在 dist/
 - **配色与排版**：编辑 `assets/style.css` 顶部的设计令牌（`:root` 与 `[data-theme='dark']`）
 - **页面结构**：编辑 `scripts/templates.ts`
 - **内置功能**：明暗主题、文章目录（h2/h3）、阅读进度条、代码高亮与复制、Ctrl/Cmd+K 站内搜索、RSS（`/feed.xml`）、sitemap、404 页
+
+## 随笔
+
+在 `content/notes/` 新建 Markdown 文件即可添加随笔，无需标题：
+
+```markdown
+---
+date: 2026-09-07 12:00:00
+---
+
+随手记下的内容，可以使用 Markdown 链接、图片和段落。
+```
+
+随笔按时间倒序排列，首页最多展示三张纸片；`/notes/` 展示完整列表，文件名作为每条随笔的永久锚点。示例文件带有 `sample: true`，页面会显示“测试随笔”；写正式内容时移除此字段即可。站内搜索同时收录文章与随笔。
+
+首页文章最多展示三本，`/archives/` 为按年份分组的完整书架。

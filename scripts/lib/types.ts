@@ -83,6 +83,15 @@ export interface AboutPage {
   html: string;
 }
 
+export interface Note {
+  slug: string;
+  url: string;
+  date: PostDate;
+  html: string;
+  excerpt: string;
+  sample: boolean;
+}
+
 export interface ArchiveGroup {
   year: string;
   posts: Post[];

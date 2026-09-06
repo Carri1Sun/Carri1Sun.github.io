@@ -4,6 +4,24 @@
 (() => {
   'use strict';
 
+  /* 只在打开文章时匹配所点击的标题，列表之间切换不移动书名。 */
+  const clearArticleTransition = () => {
+    for (const title of document.querySelectorAll('.book-title, .post-card-title')) {
+      title.style.removeProperty('view-transition-name');
+    }
+  };
+  window.addEventListener('pageshow', clearArticleTransition);
+  document.addEventListener('click', (event) => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    clearArticleTransition();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const link = event.target.closest('.book-link, .post-card-link');
+    if (!link || link.target === '_blank' || link.hasAttribute('download')) return;
+    const title = link.querySelector('.book-title, .post-card-title');
+    const name = title?.style.getPropertyValue('--article-transition');
+    if (name) title.style.setProperty('view-transition-name', name);
+  });
+
   /* ---------------------------------- 作者头像彩蛋 ---------------------------------- */
 
   const avatarCoin = document.querySelector('[data-avatar-flip]');
