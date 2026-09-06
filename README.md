@@ -1,6 +1,6 @@
-# Subaru's Notes
+# Kaiyi's Notes
 
-Subaru 的个人博客。不依赖 Hexo 或任何博客框架 —— 用 TypeScript 手写的静态站点生成器把 `content/` 下的 Markdown 构建成纯静态页面，通过 GitHub Actions 发布到 GitHub Pages。
+Kaiyi 的个人博客。不依赖 Hexo 或任何博客框架 —— 用 TypeScript 手写的静态站点生成器把 `content/` 下的 Markdown 构建成纯静态页面，通过 GitHub Actions 发布到 GitHub Pages。
 
 生成器直接以 Node 原生 TypeScript 运行（type stripping，Node 22.18+ / 24，无需编译步骤）；`npm run check` 走 `tsc --noEmit` 严格类型检查。
 

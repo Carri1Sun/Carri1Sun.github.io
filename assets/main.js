@@ -21,6 +21,9 @@
   for (const button of document.querySelectorAll('[data-theme-toggle]')) {
     button.addEventListener('click', () => {
       setTheme(root.dataset.theme === 'dark' ? 'light' : 'dark');
+      button.classList.remove('is-switching');
+      requestAnimationFrame(() => button.classList.add('is-switching'));
+      setTimeout(() => button.classList.remove('is-switching'), 420);
     });
   }
 
@@ -116,11 +119,18 @@
   const overlay = document.getElementById('search-overlay');
   const input = document.getElementById('search-input');
   const resultList = document.getElementById('search-results');
+  const status = document.getElementById('search-status');
+  const closeButton = overlay?.querySelector('.search-close');
 
-  if (overlay && input && resultList) {
+  if (overlay && input && resultList && status && closeButton instanceof HTMLElement) {
     let index = null;
+    let indexPromise = null;
+    let loadError = false;
     let results = [];
     let selected = 0;
+    let lastFocused = null;
+    let openRevision = 0;
+    const backgroundElements = [...document.body.children].filter((element) => element !== overlay);
 
     const escapeHtml = (text) =>
       text
@@ -130,11 +140,27 @@
         .replaceAll('"', '&quot;');
 
     async function loadIndex() {
-      if (!index) {
-        const response = await fetch('/search.json');
-        index = await response.json();
+      if (index !== null) return index;
+      if (!indexPromise) {
+        loadError = false;
+        indexPromise = fetch('/search.json')
+          .then((response) => {
+            if (!response.ok) throw new Error(`搜索索引加载失败：${response.status}`);
+            return response.json();
+          })
+          .then((data) => {
+            index = data;
+            return data;
+          })
+          .catch((error) => {
+            loadError = true;
+            throw error;
+          })
+          .finally(() => {
+            indexPromise = null;
+          });
       }
-      return index;
+      return indexPromise;
     }
 
     function snippet(text, query) {
@@ -174,13 +200,17 @@
         .map((entry) => entry.post);
     }
 
-    function render() {
+    function render(statusMessage = '') {
       if (!results.length) {
-        resultList.innerHTML = `<li class="search-empty">${
+        resultList.innerHTML = '';
+        input.removeAttribute('aria-activedescendant');
+        status.hidden = false;
+        status.textContent = statusMessage || (
           input.value.trim() ? '没有找到相关文章' : '输入关键词，搜索全站文章'
-        }</li>`;
+        );
         return;
       }
+      status.hidden = true;
       resultList.innerHTML = results
         .map((post, i) => {
           const highlighted = input.value.trim()
@@ -193,36 +223,65 @@
               )
             : escapeHtml(post.title);
           const meta = [post.date, post.category, ...(post.tags || [])].filter(Boolean).join(' · ');
-          return `<li class="search-result${i === selected ? ' selected' : ''}" data-url="${post.url}" role="option" aria-selected="${i === selected}">
+          return `<li id="search-result-${i}" class="search-result${i === selected ? ' selected' : ''}" data-url="${post.url}" role="option" aria-selected="${i === selected}">
             <div class="search-result-title">${highlighted}</div>
             <div class="search-result-meta">${escapeHtml(meta)}</div>
           </li>`;
         })
         .join('');
+      input.setAttribute('aria-activedescendant', `search-result-${selected}`);
     }
 
     function escapeRegExp(text) {
       return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    async function open() {
+    function updateResults() {
+      if (index === null) {
+        results = [];
+        render(loadError ? '搜索暂时不可用，请稍后重试' : '搜索索引正在加载…');
+        return;
+      }
+      results = search(index, input.value);
+      selected = 0;
+      render();
+    }
+
+    function setBackgroundInert(inert) {
+      for (const element of backgroundElements) element.inert = inert;
+    }
+
+    function open() {
+      const revision = ++openRevision;
+      lastFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
       overlay.hidden = false;
       document.body.style.overflow = 'hidden';
-      try {
-        await loadIndex();
-      } catch {
-        index = [];
-      }
+      setBackgroundInert(true);
+      input.setAttribute('aria-expanded', 'true');
       input.value = '';
       results = [];
       selected = 0;
-      render();
+      render(index === null ? '搜索索引正在加载…' : '');
       input.focus();
+      void loadIndex()
+        .then(() => {
+          if (revision === openRevision && !overlay.hidden) updateResults();
+        })
+        .catch(() => {
+          if (revision === openRevision && !overlay.hidden) updateResults();
+        });
     }
 
     function close() {
+      if (overlay.hidden) return;
+      openRevision += 1;
       overlay.hidden = true;
       document.body.style.overflow = '';
+      setBackgroundInert(false);
+      input.setAttribute('aria-expanded', 'false');
+      input.removeAttribute('aria-activedescendant');
+      lastFocused?.focus();
+      lastFocused = null;
     }
 
     function move(step) {
@@ -246,10 +305,20 @@
       if (event.target.closest('[data-search-close]')) close();
     });
 
+    overlay.addEventListener('keydown', (event) => {
+      if (event.key === 'Tab') {
+        if (event.shiftKey && document.activeElement === input) {
+          event.preventDefault();
+          closeButton.focus();
+        } else if (!event.shiftKey && document.activeElement === closeButton) {
+          event.preventDefault();
+          input.focus();
+        }
+      }
+    });
+
     input.addEventListener('input', () => {
-      results = search(index ?? [], input.value);
-      selected = 0;
-      render();
+      updateResults();
     });
 
     input.addEventListener('keydown', (event) => {

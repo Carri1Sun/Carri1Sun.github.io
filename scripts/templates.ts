@@ -21,12 +21,18 @@ export const icons = {
     '<svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>',
   rss: stroke('<path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/>'),
   search: stroke('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'),
+  close: stroke('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'),
   sun: stroke(
     '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
   ),
   moon: stroke('<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'),
   arrow: stroke('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>'),
 };
+
+const sloganHtml = (text: string): string =>
+  esc(text)
+    .replace('几百倍', '<mark class="slogan-highlight">几百倍</mark>')
+    .replace('亲手', '<span class="slogan-hand">亲手</span>');
 
 /* ---------------------------------- 页面骨架 ---------------------------------- */
 
@@ -88,7 +94,10 @@ export function layout(site: SiteConfig, page: LayoutPage): string {
 
   <header class="site-header">
     <div class="container header-inner">
-      <a class="site-title" href="/">${esc(site.title)}</a>
+      <a class="site-title" href="/" aria-label="${esc(site.title)}">
+        <span class="site-title-mark" aria-hidden="true">K.</span>
+        <span class="site-title-text">${esc(site.title)}</span>
+      </a>
       <nav class="site-nav" aria-label="主导航">
         ${nav}
         <button class="icon-button" type="button" data-search-open aria-label="搜索（Ctrl+K）" title="搜索 Ctrl+K">${icons.search}</button>
@@ -117,12 +126,14 @@ ${page.content}
 
   <div class="search-overlay" id="search-overlay" hidden>
     <div class="search-backdrop" data-search-close></div>
-    <div class="search-panel" role="dialog" aria-modal="true" aria-label="站内搜索">
+    <div class="search-panel" role="dialog" aria-modal="true" aria-labelledby="search-title">
+      <h2 class="sr-only" id="search-title">站内搜索</h2>
       <div class="search-input-row">
         <span class="search-input-icon">${icons.search}</span>
-        <input id="search-input" type="search" placeholder="搜索文章…" autocomplete="off" spellcheck="false">
-        <kbd>esc</kbd>
+        <input id="search-input" type="search" placeholder="搜索文章…" autocomplete="off" spellcheck="false" aria-label="搜索文章" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="search-results" aria-describedby="search-status">
+        <button class="search-close" type="button" data-search-close aria-label="关闭搜索" title="关闭搜索">${icons.close}<kbd aria-hidden="true">esc</kbd></button>
       </div>
+      <p class="search-status" id="search-status" role="status" aria-live="polite">输入关键词，搜索全站文章</p>
       <ul class="search-results" id="search-results" role="listbox" aria-label="搜索结果"></ul>
       <div class="search-hint"><span>↑↓ 选择</span><span>↵ 打开</span></div>
     </div>
@@ -134,60 +145,92 @@ ${page.content}
 
 /* ---------------------------------- 首页 ---------------------------------- */
 
-function postCard(post: Post): string {
+// 使用完整 slug 的码点作为 CSS 标识符，中文和特殊字符也能稳定匹配。
+const articleTransition = (post: Post): string =>
+  `article-${Array.from(post.slug, (char) => char.codePointAt(0)!.toString(16)).join('-')}`;
+
+function postCard(post: Post, index = 0): string {
   const tags = (post.tags ?? []).map((tag) => `<span class="tag">#${esc(tag)}</span>`).join('');
   const category = post.categories.length
     ? `<span class="chip">${esc(post.categories[0] ?? '')}</span>`
     : '';
+  const number = String(index + 1).padStart(2, '0');
 
-  return `        <article class="post-card">
+  return `        <article class="post-card" style="--card-order:${index}">
           <a class="post-card-link" href="${esc(post.url)}">
-            <header class="post-card-meta">
-              <time datetime="${esc(post.date.datetime)}">${esc(post.date.iso)}</time>
-              <span class="meta-dot">·</span>
-              <span>约 ${post.minutes} 分钟</span>
+            <header class="post-card-topline">
+              <span class="post-card-index">LOG ${number}</span>
               ${category}
+              <span class="post-card-arrow" aria-hidden="true">${icons.arrow}</span>
             </header>
-            <h2 class="post-card-title">${esc(post.title)}</h2>
+            <h2 class="post-card-title" style="--article-transition:${articleTransition(post)}">${esc(post.title)}</h2>
             <p class="post-card-excerpt">${esc(post.excerpt)}</p>
-            ${tags ? `<footer class="post-card-tags">${tags}</footer>` : ''}
+            <footer class="post-card-footer">
+              <div class="post-card-meta">
+                <time datetime="${esc(post.date.datetime)}">${esc(post.date.iso)}</time>
+                <span class="meta-dot">/</span>
+                <span>${post.minutes} MIN</span>
+              </div>
+              ${tags ? `<div class="post-card-tags">${tags}</div>` : ''}
+            </footer>
           </a>
         </article>`;
 }
 
-export function homePage(site: SiteConfig, posts: Post[], total: number): string {
-  const cards = posts.map(postCard).join('\n');
-  const truncated = total > posts.length;
-  const content = `    <section class="hero">
-      <img class="hero-avatar" src="${esc(site.avatar)}" alt="${esc(site.author)} 的头像" width="72" height="72">
-      <div class="hero-text">
-        <h1 class="hero-name">${esc(site.author)}</h1>
-        <p class="hero-subtitle">${esc(site.subtitle)}</p>
-        <div class="hero-links">
-          <a class="hero-link" href="${esc(site.github)}" target="_blank" rel="noopener noreferrer">${icons.github} GitHub</a>
-          <a class="hero-link" href="/feed.xml">${icons.rss} RSS</a>
+// 封面是站点自有的矢量图形，不依赖远程图片或 WebGL。
+function bookCover(site: SiteConfig, post: Post, index: number): string {
+  const number = String(index + 1).padStart(2, '0');
+  const motifs: Record<string, string> = {
+    'resource-optimize': 'frames', 'agent-evals-practice': 'orbit',
+    'agent-plan-design': 'steps', 'how-to-use-ai': 'rays',
+  };
+  const motif = motifs[post.slug] ?? 'orbit';
+  const art = motif === 'frames'
+    ? '<rect x="25" y="25" width="190" height="120" rx="2"/><rect x="45" y="45" width="190" height="120" rx="2"/><rect x="65" y="65" width="190" height="120" rx="2"/><path d="M137 94l36 23-36 23z" fill="currentColor" stroke="none"/>'
+    : motif === 'orbit'
+    ? Array.from({length: 9}, (_, i) => `<ellipse cx="140" cy="110" rx="${28 + i * 10}" ry="80" transform="rotate(${i * 10} 140 110)"/>`).join('')
+    : motif === 'steps'
+    ? Array.from({length: 7}, (_, i) => `<path d="M${24+i*31} 185V${165-i*22}h31v${20+i*22}"/>`).join('')
+    : Array.from({length: 24}, (_, i) => `<path d="M140 110L${140+105*Math.cos(i*Math.PI/12)} ${110+95*Math.sin(i*Math.PI/12)}"/>`).join('');
+  return `<article class="book-entry">
+    <a class="book-link" href="${esc(post.url)}" aria-label="阅读：${esc(post.title)}">
+      <div class="book-stage">
+        <div class="book book-${motif}">
+          <div class="book-spine" aria-hidden="true">${esc(post.categories[0] ?? 'NOTES')} · ${number}</div>
+          <div class="book-pages" aria-hidden="true"></div>
+          <div class="book-front">
+            <div class="book-top"><span>${esc(site.title.toUpperCase())}</span><span>${number}</span></div>
+            <h3 class="book-title" style="--article-transition:${articleTransition(post)}">${esc(post.title)}</h3>
+            <svg class="book-art" viewBox="0 0 280 220" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">${art}</svg>
+            <div class="book-bottom"><span>${esc(post.categories[0] ?? '随笔')}</span><span>${esc(post.date.year)}</span></div>
+          </div>
         </div>
       </div>
+      <div class="book-caption"><time datetime="${esc(post.date.datetime)}">${esc(post.date.iso)}</time><span>${post.minutes} 分钟 ${icons.arrow}</span></div>
+    </a>
+    <p class="book-excerpt">${esc(post.excerpt)}</p>
+  </article>`;
+}
+
+export function homePage(site: SiteConfig, posts: Post[], total: number): string {
+  const content = `    <section class="press-intro">
+      <div class="press-heading">
+        <p class="press-eyebrow">${esc(site.author)} 的个人文集</p>
+        <h1>把好奇，<br>做成<span>具体的东西。</span></h1>
+      </div>
+      <div class="press-description">
+        <p>${esc(site.subtitle)}</p>
+        <a class="press-about" href="/about/">关于我 ${icons.arrow}</a>
+      </div>
     </section>
-
-    <section class="post-section">
-      <div class="section-heading-row">
-        <h2 class="section-heading">文章</h2>
-        <span class="section-count">${total} 篇</span>
-      </div>
-      <div class="post-list">
-${cards}
-      </div>
-      ${truncated ? `      <a class="more-link" href="/archives/">查看全部 ${total} 篇 ${icons.arrow}</a>` : ''}
+    <section class="press-library" aria-labelledby="library-title">
+      <div class="library-heading"><h2 id="library-title">最近在想</h2><span>${String(total).padStart(2, '0')} 篇文章 · 持续更新</span></div>
+      <div class="bookshelf">${posts.map((post, index) => bookCover(site, post, index)).join('\n')}</div>
+      <a class="press-archive" href="/archives/">全部文章 ${icons.arrow}</a>
     </section>`;
-
   return layout(site, {
-    title: site.title,
-    description: `${site.subtitle} ${site.description}`,
-    path: '/',
-    active: 'home',
-    bodyClass: 'page-home',
-    content,
+    title: site.title, description: `${site.subtitle} ${site.description}`,
+    path: '/', active: 'home', bodyClass: 'page-home', content,
   });
 }
 
@@ -224,13 +267,14 @@ export function postPage(site: SiteConfig, post: Post, { prev, next }: PostNeigh
 
   const content = `    <article class="post">
       <header class="post-header">
+        <p class="post-kicker">FIELD NOTE / ${esc(post.categories[0] ?? 'IDEA')}</p>
         <div class="post-meta">
           <time datetime="${esc(post.date.datetime)}">${esc(post.date.displayFull)}</time>
           <span class="meta-dot">·</span>
           <span>${post.words} 字 · 约 ${post.minutes} 分钟</span>
           ${category}
         </div>
-        <h1 class="post-title">${esc(post.title)}</h1>
+        <h1 class="post-title" style="--article-transition:${articleTransition(post)}">${esc(post.title)}</h1>
         ${tags ? `<div class="post-tags">${tags}</div>` : ''}
       </header>
 
@@ -285,6 +329,7 @@ ${group.posts
     .join('\n');
 
   const content = `    <header class="page-header">
+      <p class="page-kicker">LIBRARY / BY YEAR</p>
       <h1 class="page-title">归档</h1>
       <p class="page-subtitle">共 ${total} 篇文章</p>
     </header>
@@ -330,6 +375,7 @@ export function tagsIndexPage(site: SiteConfig, tags: TagGroup[]): string {
   ).replaceAll('<', '\\u003c');
 
   const content = `    <header class="page-header">
+      <p class="page-kicker">TOPIC MAP / EXPLORE</p>
       <h1 class="page-title">标签</h1>
       <p class="page-subtitle">共 ${tags.length} 个标签 · ${total} 篇文章</p>
     </header>
@@ -366,6 +412,7 @@ ${cloud}
 export function tagPage(site: SiteConfig, group: TagGroup): string {
   const cards = group.posts.map(postCard).join('\n');
   const content = `    <header class="page-header">
+      <p class="page-kicker">TAG / ${esc(group.tag)}</p>
       <h1 class="page-title">#${esc(group.tag)}</h1>
       <p class="page-subtitle">共 ${group.count} 篇文章</p>
     </header>
@@ -387,13 +434,26 @@ ${cards}
 /* ---------------------------------- 关于页 ---------------------------------- */
 
 export function aboutPage(site: SiteConfig, about: AboutPage): string {
+  const topics = site.keywords
+    .map((keyword) => `<span class="hero-topic">${esc(keyword)}</span>`)
+    .join('');
   const content = `    <section class="about">
       <div class="about-card">
-        <img class="about-avatar" src="${esc(site.avatar)}" alt="${esc(site.author)} 的头像" width="88" height="88">
-        <h1 class="about-title">${esc(about.title)}</h1>
-        <p class="about-subtitle">${esc(site.subtitle)}</p>
-        <div class="hero-links about-links">
-          <a class="hero-link" href="${esc(site.github)}" target="_blank" rel="noopener noreferrer">${icons.github} GitHub</a>
+        <p class="about-id">BUILDER ID / 001</p>
+        <div class="about-profile">
+          <span class="about-avatar-frame">
+            <img class="about-avatar" src="${esc(site.avatar)}" alt="${esc(site.author)} 的头像" width="116" height="116">
+          </span>
+          <div class="about-intro">
+            <h1 class="about-title">${esc(about.title)}</h1>
+            <p class="about-subtitle">${sloganHtml(site.subtitle)}</p>
+          </div>
+        </div>
+        <div class="about-card-footer">
+          <div class="hero-topics" aria-label="关注领域">${topics}</div>
+          <div class="hero-links about-links">
+            <a class="hero-link" href="${esc(site.github)}" target="_blank" rel="noopener noreferrer">${icons.github} GitHub</a>
+          </div>
         </div>
       </div>
       <div class="post-content about-content">

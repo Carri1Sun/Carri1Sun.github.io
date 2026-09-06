@@ -4,13 +4,13 @@ import type { SiteConfig } from './scripts/lib/types.ts';
 
 const site = {
   // 站点标题（浏览器标签页、导航栏、RSS、SEO）
-  title: "Subaru's Notes",
+  title: "Kaiyi's Notes",
   // 作者名
-  author: 'Subaru',
+  author: 'Kaiyi',
   // 首页副标题 / 个人签名
-  subtitle: '寿司郎从从容容游刃有余集合',
+  subtitle: '无所不知的 AI 把绝大部分专业技能的掌握成本降低了几百倍，我想借此亲手把好玩的事情都自己做一遍。',
   // 站点描述（SEO / RSS）
-  description: 'Subaru 的个人博客，记录产品、工程与 Agent 实践。',
+  description: 'Kaiyi 的个人博客，记录产品、工程与 Agent 实践。',
   // SEO 关键词
   keywords: ['Agent', '产品', 'Chromium', 'iOS', '独立开发'],
   // 站点语言与时区（用于日期显示与 RSS）
