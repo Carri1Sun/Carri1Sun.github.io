@@ -32,8 +32,7 @@ export const icons = {
 
 const sloganHtml = (text: string): string =>
   esc(text)
-    .replace('几百倍', '<mark class="slogan-highlight">几百倍</mark>')
-    .replace('亲手', '<span class="slogan-hand">亲手</span>');
+    .replace('寿司郎', '<span class="slogan-hand">寿司郎</span>');
 
 /* ---------------------------------- 页面骨架 ---------------------------------- */
 
@@ -321,7 +320,7 @@ export function archivePage(site: SiteConfig, groups: ArchiveGroup[]): string {
   return layout(site, {
     title: `文章 · ${site.title}`, description: site.description,
     path: '/archives/', active: 'archives', bodyClass: 'page-archives',
-    content: `<header class="page-header"><h1 class="page-title">文章</h1><p class="page-subtitle">共 ${total} 篇文章 · 按年份收藏</p></header>${sections}`,
+    content: `<header class="page-header"><h1 class="page-title">文章</h1><p class="page-subtitle">共 ${total} 篇</p></header>${sections}`,
   });
 }
 
@@ -345,7 +344,7 @@ export function notesPage(site: SiteConfig, notes: Note[]): string {
   return layout(site, {
     title: `随笔 · ${site.title}`, description: `${site.author} 的随笔，记录零散的想法与日常。`,
     path: '/notes/', active: 'notes', bodyClass: 'page-notes',
-    content: `<header class="page-header"><h1 class="page-title">随笔</h1><p class="page-subtitle">共 ${notes.length} 条 · 随手记下的想法与日常</p></header>
+    content: `<header class="page-header"><h1 class="page-title">随笔</h1><p class="page-subtitle">共 ${notes.length} 条</p></header>
     <div class="notes-list">${list || '<p class="notes-empty">还没有随笔。</p>'}</div>`,
   });
 }
