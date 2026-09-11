@@ -329,7 +329,7 @@ export function archivePage(site: SiteConfig, groups: ArchiveGroup[]): string {
 function notePaper(note: Note): string {
   return `<article class="note-paper">
     <a class="note-paper-link" href="${esc(note.url)}" aria-label="阅读 ${esc(note.date.display)} 的随笔">
-      <div class="note-paper-meta"><time datetime="${esc(note.date.datetime)}">${esc(note.date.iso)}</time>${note.sample ? '<span class="note-sample">测试随笔</span>' : ''}</div>
+      <div class="note-paper-meta"><time datetime="${esc(note.date.datetime)}">${esc(note.date.iso)}</time></div>
       <p class="note-paper-text">${esc(note.excerpt)}</p>
       <span class="note-paper-read">读这条 ${icons.arrow}</span>
     </a>
@@ -338,7 +338,7 @@ function notePaper(note: Note): string {
 
 export function notesPage(site: SiteConfig, notes: Note[]): string {
   const list = notes.map((note) => `<article class="note-item" id="${esc(note.slug)}" aria-label="${esc(note.date.display)} 的随笔">
-    <div class="note-item-meta"><a href="${esc(note.url)}"><time datetime="${esc(note.date.datetime)}">${esc(note.date.displayFull)}</time></a>${note.sample ? '<span class="note-sample">测试随笔</span>' : ''}</div>
+    <div class="note-item-meta"><a href="${esc(note.url)}"><time datetime="${esc(note.date.datetime)}">${esc(note.date.displayFull)}</time></a></div>
     <div class="post-content note-content">${note.html}</div>
   </article>`).join('\n');
   return layout(site, {

@@ -89,7 +89,6 @@ export interface Note {
   date: PostDate;
   html: string;
   excerpt: string;
-  sample: boolean;
 }
 
 export interface ArchiveGroup {

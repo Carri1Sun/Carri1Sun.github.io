@@ -1323,7 +1323,6 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 .note-paper-link { display: flex; flex-direction: column; min-height: 250px; padding: 25px; color: var(--text); }
 .note-paper-meta,.note-item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 11px; color: var(--muted); }
 .note-paper-meta time { font-family: var(--font-mono); }
-.note-sample { font-size: 10px; color: var(--muted); }
 .note-paper-text { margin: 25px 0; font: 18px/1.9 var(--font-serif); color: var(--heading); display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
 .note-paper-read { display: flex; align-items: center; justify-content: space-between; margin-top: auto; color: var(--muted); font-size: 11px; }
 .note-paper-read svg { width: 15px; height: 15px; }

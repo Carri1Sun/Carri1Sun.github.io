@@ -150,7 +150,7 @@ async function loadNotes(renderer: Renderer): Promise<Note[]> {
     const slug = file.replace(/\.md$/, '');
     const { html } = renderer.render(body);
     notes.push({ slug, url: `/notes/#${encodeURIComponent(slug)}`, date, html,
-      excerpt: truncate(plainText(html), 180), sample: String(data.sample) === 'true' });
+      excerpt: truncate(plainText(html), 180) });
   }
   return notes.sort((a, b) => b.date.sortKey.localeCompare(a.date.sortKey) || a.slug.localeCompare(b.slug));
 }
