@@ -1,4 +1,4 @@
-# Kaiyi's Notes 协作规则
+# Kaiyi's Blog 协作规则
 
 ## 沟通与内容原则
 

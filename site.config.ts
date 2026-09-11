@@ -4,7 +4,7 @@ import type { SiteConfig } from './scripts/lib/types.ts';
 
 const site = {
   // 站点标题（浏览器标签页、导航栏、RSS、SEO）
-  title: "Kaiyi's Notes",
+  title: "Kaiyi's Blog",
   // 作者名
   author: 'Kaiyi',
   // 首页副标题 / 个人签名
