@@ -69,8 +69,11 @@ main{flex:1}
   .has-fixed-header .site-header-spacer{display:none}
 }
 .header-inner{height:92px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.header-brand{display:flex;align-items:center;gap:12px;min-width:0}
 .site-title{display:inline-flex;align-items:center;gap:12px;white-space:nowrap;color:var(--heading);font:700 23px var(--font-display);letter-spacing:-.06em}
-.site-title-mark{font:700 27px var(--font-display);color:var(--bg);background:var(--brand);letter-spacing:-3px;width:36px;height:36px;display:grid;place-items:center;padding-right:3px;transform:rotate(-7deg)}
+.header-brand .avatar-coin{flex:0 0 40px;width:40px;height:40px;perspective:400px}
+.header-brand .avatar-coin .avatar-coin-front,
+.header-brand .avatar-coin .avatar-coin-back{box-shadow:0 0 0 2px var(--bg),0 0 0 3px var(--brand)}
 .site-nav{display:flex;align-items:center;gap:15px}
 .nav-link{position:relative;color:var(--muted);padding:5px 2px;font-size:13px}
 .nav-link.active{color:var(--heading)}
@@ -1223,10 +1226,10 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
  .book-caption{font-size:11px}.book-excerpt{font-size:13px}
 }
 @media(max-width:640px){
- .container{padding:0 24px}.header-inner{height:78px;gap:8px}.site-title{font-size:19px;gap:5px}.site-title-mark{font-size:29px;width:25px}
+ .container{padding:0 24px}.header-inner{height:78px;gap:8px}.site-title{font-size:19px;gap:5px}
  .site-nav{gap:10px}.nav-link{font-size:12px}.icon-button{width:28px;height:30px}.site-nav .nav-link:first-child{display:none}
- .press-intro{padding:28px 0;gap:16px}
- .avatar-coin{flex-basis:48px;width:48px;height:48px}
+ .press-intro{padding:28px 0}
+ .header-brand{gap:8px}.header-brand .avatar-coin{flex-basis:36px;width:36px;height:36px}
  .press-description p{font-size:23px;margin-bottom:6px}
  .library-heading{margin-bottom:30px}.library-heading>span{font-size:10px}.bookshelf{gap:34px 22px}
  .book-stage{padding:6px 1px 25px 8px}.book{height:260px}.book-front{padding:16px 12px 14px 18px}.book-title{font-size:19px;margin-top:20px}
@@ -1320,7 +1323,7 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 .avatar-coin:focus-visible .avatar-coin-front,
 .avatar-coin:focus-visible .avatar-coin-back {
   outline: 2px dashed var(--accent);
-  outline-offset: 9px;
+  outline-offset: 5px;
 }
 .avatar-sparks {
   position: absolute;
@@ -1410,7 +1413,6 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 .post-content a,.note-content a { text-decoration:underline; text-decoration-thickness:1px; text-underline-offset:4px; }
 @media(max-width:640px) {
   .press-description p { font-size:26px; }
-  .site-title-mark { font-size:24px; width:32px; height:32px; }
 }
 
 /* 首页栏目：标题、计数和入口作为整行收紧上下间距。 */
