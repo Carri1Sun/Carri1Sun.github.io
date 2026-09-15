@@ -83,7 +83,7 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 .avatar-coin-back{transform:rotateY(180deg)}
 .avatar-coin.is-flipped .avatar-coin-inner{transform:rotateY(180deg)}
 @media(hover:hover) and (pointer:fine){.avatar-coin:not(:disabled):not(.is-flipped):hover .avatar-coin-inner{transform:rotateY(-15deg) rotateZ(-4deg)}}
-.press-about{font-size:13px;display:inline-flex;align-items:center;gap:26px;color:var(--heading)}
+.press-about{font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:26px;color:var(--heading)}
 .press-about svg,.press-archive svg{transition:transform .2s}
 .press-about:hover svg,.press-archive:hover svg{transform:translateX(4px)}
 .press-library{padding:32px 0 70px}
