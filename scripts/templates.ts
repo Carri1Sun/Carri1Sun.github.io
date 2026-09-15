@@ -110,6 +110,7 @@ export function layout(site: SiteConfig, page: LayoutPage): string {
       </nav>
     </div>
   </header>
+  <div class="site-header-spacer" aria-hidden="true"></div>
 
   <main id="main" class="container${page.bodyClass === 'page-post' ? ' container-wide' : ''}">
 ${page.content}

@@ -4,6 +4,20 @@
 (() => {
   'use strict';
 
+  // 保留根页面原生滚动与回弹；只测量 fixed 顶部栏的文档流占位。
+  const fixedHeader = document.querySelector('.site-header');
+  const headerSpacer = document.querySelector('.site-header-spacer');
+  if (fixedHeader && headerSpacer && 'ResizeObserver' in window) {
+    const measureHeader = () => {
+      document.documentElement.style.setProperty('--header-height', `${fixedHeader.getBoundingClientRect().height}px`);
+    };
+    measureHeader();
+    document.documentElement.classList.add('has-fixed-header');
+    const headerObserver = new ResizeObserver(measureHeader);
+    headerObserver.observe(fixedHeader);
+  }
+
+
   // 图片加载失败时露出底层轨道图案；兼顾脚本执行前已失败的缓存请求。
   document.querySelectorAll('[data-cover-image]').forEach((image) => {
     const fallback = () => { image.hidden = true; };
