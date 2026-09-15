@@ -69,7 +69,7 @@ function createRenderer() {
       if (seen > 0) id = `${id}-${seen}`;
 
       headings.push({ depth, id, text });
-      return `<h${depth} id="${id}"><a class="anchor" href="#${id}" aria-label="跳转到此标题">#</a>${html}</h${depth}>`;
+      return `<h${depth} id="${id}">${html}</h${depth}>`;
     },
   };
 

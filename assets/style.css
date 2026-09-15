@@ -278,20 +278,6 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
   font-size: 17.5px;
 }
 
-.post-content .anchor {
-  margin-left: 0.45em;
-  color: var(--accent);
-  font-weight: 500;
-  opacity: 0;
-  transition: opacity 0.12s ease;
-}
-
-.post-content h2:hover .anchor,
-.post-content h3:hover .anchor,
-.post-content h4:hover .anchor {
-  opacity: 0.75;
-}
-
 .post-content p {
   margin: 1em 0;
 }
