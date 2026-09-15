@@ -227,11 +227,11 @@ export function homePage(site: SiteConfig, posts: Post[], total: number, notes: 
       </div>
     </section>
     <section class="press-library" aria-labelledby="library-title">
-      <div class="library-heading"><h2 id="library-title">最近的文章</h2><div class="library-actions"><span>${String(total).padStart(2, '0')} 篇文章</span><a class="library-more" href="/archives/">查看更多文章 ${icons.arrow}</a></div></div>
+      <div class="library-heading"><h2 id="library-title">文章</h2><div class="library-actions"><span>${String(total).padStart(2, '0')} 篇文章</span><a class="library-more" href="/archives/">查看更多文章 ${icons.arrow}</a></div></div>
       <div class="bookshelf">${posts.map(bookCover).join('\n')}</div>
     </section>
     <section class="home-notes" aria-labelledby="notes-title">
-      <div class="library-heading"><h2 id="notes-title">最近的随笔</h2><div class="library-actions"><span>${String(notes.length).padStart(2, '0')} 条随笔</span><a class="library-more" href="/notes/">查看全部随笔 ${icons.arrow}</a></div></div>
+      <div class="library-heading"><h2 id="notes-title">随笔</h2><div class="library-actions"><span>${String(notes.length).padStart(2, '0')} 条随笔</span><a class="library-more" href="/notes/">查看全部随笔 ${icons.arrow}</a></div></div>
       <div class="note-papers">${notes.slice(0, 3).map(notePaper).join('\n') || '<p class="notes-empty">还没有随笔。</p>'}</div>
     </section>`;
   return layout(site, {

@@ -1404,3 +1404,11 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
   .press-description p { font-size:26px; }
   .site-title-mark { font-size:24px; width:32px; height:32px; }
 }
+
+/* 首页栏目：标题、计数和入口作为整行收紧上下间距。 */
+.page-home .press-library { padding-top:24px; padding-bottom:44px; }
+.page-home .library-heading { margin-bottom:24px; }
+@media(max-width:640px) {
+  .page-home .press-library { padding-top:20px; padding-bottom:28px; }
+  .page-home .library-heading { margin-bottom:18px; }
+}
