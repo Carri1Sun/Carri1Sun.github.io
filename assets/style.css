@@ -792,7 +792,7 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 /* ---------------------------------- 关于页 ---------------------------------- */
 
 .about {
-  padding: 44px 0 72px;
+  padding: 32px 0 72px;
 }
 
 .about-card {
@@ -815,10 +815,6 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
   height: 190px;
   border: 1px dashed color-mix(in srgb, var(--accent) 48%, transparent);
   border-radius: 50%;
-}
-
-.about-id {
-  margin-bottom: 22px;
 }
 
 .about-profile {
@@ -860,22 +856,6 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
   color: var(--text);
   font-size: 16px;
   line-height: 1.75;
-}
-
-.about-card-footer {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px dashed var(--border);
-}
-
-.about-links {
-  justify-content: flex-end;
 }
 
 .about-content {
@@ -1201,16 +1181,11 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 .cloud-tag:nth-child(n){border-color:var(--border);border-radius:2px;box-shadow:none!important;background:none}
 .tag-mode{border-radius:3px;box-shadow:none}
 .tag-mode-btn{border-radius:2px}
-.about-card{border:0;border-radius:0;background:none;box-shadow:none;padding:20px 0 35px;border-bottom:1px solid var(--border)}
+.about-card{border:0;border-radius:0;background:none;box-shadow:none;padding:0;margin-bottom:20px}
 .about-card::before,.about-card::after{display:none}
 .about-avatar-frame{padding:0;border:0;border-radius:2px;box-shadow:none;transform:none;background:none}
 .about-avatar{border-radius:2px}
-.about-id{color:var(--accent);font:11px var(--font-mono)}
 .about-subtitle{line-height:1.9}
-.about-card-footer{border-top:0}
-.hero-topics,.hero-links{display:flex;flex-wrap:wrap;gap:16px}
-.hero-topic{font-size:12px;color:var(--muted)}
-.hero-link{display:inline-flex;align-items:center;gap:8px;font-size:13px}
 .slogan-highlight{background:none;color:inherit}
 .site-footer{background:none;border-top:1px solid var(--border)}
 .footer-inner{padding-top:24px;padding-bottom:24px;font-size:11px}
@@ -1238,7 +1213,7 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
  .post{padding-top:35px}.post-header{padding:0 0 25px}.post-title{font-size:31px}.post-meta{font-size:12px}.post-content{font-size:16px}.post-content h2{font-size:24px}
  .page-header{margin-top:35px;padding-bottom:24px}.archive-group{grid-template-columns:1fr;gap:20px}.archive-year{flex-direction:row;gap:12px;align-items:baseline}.archive-item{gap:12px}.archive-item .chip{display:none}
  .post-nav{grid-template-columns:1fr}.post-nav-link:last-child{text-align:left}.post-nav-link.is-empty{display:none}
- .about-profile{grid-template-columns:76px minmax(0,1fr);gap:18px}.about-avatar{width:76px;height:76px}.about-card-footer{flex-wrap:wrap;gap:16px}
+ .about-profile{grid-template-columns:76px minmax(0,1fr);gap:18px}.about-avatar{width:76px;height:76px}
  .footer-inner{flex-direction:column;gap:6px}.footer-inner p{margin:0}.post-card-title{font-size:23px}
 }
 @media(max-width:380px){.container{padding:0 18px}.site-title-text{font-size:17px}.site-nav{gap:7px}.book-title{font-size:17px}.book{height:240px}.book-caption{font-size:8px}}

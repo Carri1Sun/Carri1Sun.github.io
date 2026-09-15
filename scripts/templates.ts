@@ -447,12 +447,8 @@ ${cards}
 /* ---------------------------------- 关于页 ---------------------------------- */
 
 export function aboutPage(site: SiteConfig, about: AboutPage): string {
-  const topics = site.keywords
-    .map((keyword) => `<span class="hero-topic">${esc(keyword)}</span>`)
-    .join('');
   const content = `    <section class="about">
       <div class="about-card">
-        <p class="about-id">BUILDER ID / 001</p>
         <div class="about-profile">
           <span class="about-avatar-frame">
             <img class="about-avatar" src="${esc(site.avatar)}" alt="${esc(site.author)} 的头像" width="116" height="116">
@@ -460,12 +456,6 @@ export function aboutPage(site: SiteConfig, about: AboutPage): string {
           <div class="about-intro">
             <h1 class="about-title">${esc(about.title)}</h1>
             <p class="about-subtitle">${sloganHtml(site.subtitle)}</p>
-          </div>
-        </div>
-        <div class="about-card-footer">
-          <div class="hero-topics" aria-label="关注领域">${topics}</div>
-          <div class="hero-links about-links">
-            <a class="hero-link" href="${esc(site.github)}" target="_blank" rel="noopener noreferrer">${icons.github} GitHub</a>
           </div>
         </div>
       </div>
