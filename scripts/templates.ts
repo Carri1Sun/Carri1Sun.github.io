@@ -180,8 +180,7 @@ function postCard(post: Post, index = 0): string {
 }
 
 // 预设封面使用 SVG；配置图片时保留轨道图案作为加载失败的回退。
-function bookCover(site: SiteConfig, post: Post, index: number): string {
-  const number = String(index + 1).padStart(2, '0');
+function bookCover(post: Post): string {
   const { preset: motif, image } = post.cover;
   const art = motif === 'frames'
     ? '<rect x="25" y="25" width="190" height="120" rx="2"/><rect x="45" y="45" width="190" height="120" rx="2"/><rect x="65" y="65" width="190" height="120" rx="2"/><path d="M137 94l36 23-36 23z" fill="currentColor" stroke="none"/>'
@@ -194,16 +193,15 @@ function bookCover(site: SiteConfig, post: Post, index: number): string {
     <a class="book-link" href="${esc(post.url)}" aria-label="阅读：${esc(post.title)}">
       <div class="book-stage">
         <div class="book book-${motif}">
-          <div class="book-spine" aria-hidden="true">${esc(post.categories[0] ?? 'NOTES')} · ${number}</div>
+          <div class="book-spine" aria-hidden="true"></div>
           <div class="book-pages" aria-hidden="true"></div>
           <div class="book-front">
-            <div class="book-top"><span>${esc(site.title.toUpperCase())}</span><span>${number}</span></div>
             <h3 class="book-title" style="--article-transition:${articleTransition(post)}">${esc(post.title)}</h3>
             <div class="book-art${image ? ' book-art-image' : ''}">
               <svg viewBox="0 0 280 220" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">${art}</svg>
               ${image ? `<img class="book-cover-image" src="${esc(image)}" alt="" loading="lazy" decoding="async" data-cover-image>` : ''}
             </div>
-            <div class="book-bottom"><span>${esc(post.categories[0] ?? '随笔')}</span><span>${esc(post.date.year)}</span></div>
+            <div class="book-bottom"><time datetime="${esc(post.date.iso)}">${esc(post.date.display)}</time></div>
           </div>
         </div>
       </div>
@@ -230,7 +228,7 @@ export function homePage(site: SiteConfig, posts: Post[], total: number, notes: 
     </section>
     <section class="press-library" aria-labelledby="library-title">
       <div class="library-heading"><h2 id="library-title">最近的文章</h2><div class="library-actions"><span>${String(total).padStart(2, '0')} 篇文章</span><a class="library-more" href="/archives/">查看更多文章 ${icons.arrow}</a></div></div>
-      <div class="bookshelf">${posts.map((post, index) => bookCover(site, post, index)).join('\n')}</div>
+      <div class="bookshelf">${posts.map(bookCover).join('\n')}</div>
     </section>
     <section class="home-notes" aria-labelledby="notes-title">
       <div class="library-heading"><h2 id="notes-title">最近的随笔</h2><div class="library-actions"><span>${String(notes.length).padStart(2, '0')} 条随笔</span><a class="library-more" href="/notes/">查看全部随笔 ${icons.arrow}</a></div></div>
@@ -313,10 +311,9 @@ ${navLink(next, '下一篇 →')}
 
 export function archivePage(site: SiteConfig, groups: ArchiveGroup[]): string {
   const total = groups.reduce((sum, group) => sum + group.posts.length, 0);
-  let index = 0;
   const sections = groups.map((group) => `<section class="shelf-year" aria-labelledby="year-${esc(group.year)}">
     <div class="library-heading"><h2 id="year-${esc(group.year)}">${esc(group.year)}</h2><span>${group.posts.length} 篇文章</span></div>
-    <div class="bookshelf">${group.posts.map((post) => bookCover(site, post, index++)).join('\n')}</div>
+    <div class="bookshelf">${group.posts.map(bookCover).join('\n')}</div>
   </section>`).join('\n');
   return layout(site, {
     title: `文章 · ${site.title}`, description: site.description,
