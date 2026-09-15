@@ -1395,7 +1395,7 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 /* 标题使用黄油体的原生单字重，避免浏览器合成粗体破坏圆角笔画。 */
 .post-title,.page-title,.about-title,.post-card-title,.post-content h2,
 .post-content h3,.post-content h4 { font-family:var(--font-display); font-weight:400; }
-.press-description p { font-size:clamp(26px,3.2vw,40px); line-height:1.45; }
+.press-description p { font-size:clamp(26px,3.2vw,40px); font-weight:700; line-height:1.45; }
 .library-heading h2 { font-family:var(--font-display); font-size:20px; font-weight:400; }
 .site-header { border-bottom:1px solid var(--border); }
 .nav-link { color:var(--text); }
