@@ -113,6 +113,15 @@ const server = http.createServer((req, res) => {
   }
 
   const relative = pathname.endsWith('/') ? `${pathname}index.html` : pathname;
+
+  // 目录路径补全结尾斜杠，与 GitHub Pages 行为保持一致（例如 /notes → /notes/）。
+  if (!pathname.endsWith('/')) {
+    const dirPath = path.normalize(path.join(distDir, pathname));
+    if (dirPath.startsWith(distDir) && fs.existsSync(dirPath) && fs.statSync(dirPath).isDirectory()) {
+      res.writeHead(301, { Location: `${pathname}/` }).end();
+      return;
+    }
+  }
   let filePath = path.normalize(path.join(distDir, relative));
   if (!filePath.startsWith(distDir)) {
     res.writeHead(403).end('Forbidden');
