@@ -92,6 +92,8 @@ export interface Note {
   date: PostDate;
   html: string;
   excerpt: string;
+  /** frontmatter 中 `pinned: true` 时置顶展示。 */
+  pinned?: boolean;
 }
 
 export interface ArchiveGroup {

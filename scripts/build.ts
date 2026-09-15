@@ -152,9 +152,11 @@ async function loadNotes(renderer: Renderer): Promise<Note[]> {
     const slug = file.replace(/\.md$/, '');
     const { html } = renderer.render(body);
     notes.push({ slug, url: `/notes/#${encodeURIComponent(slug)}`, date, html,
-      excerpt: truncate(plainText(html), 180) });
+      excerpt: truncate(plainText(html), 180), pinned: data.pinned === true });
   }
-  return notes.sort((a, b) => b.date.sortKey.localeCompare(a.date.sortKey) || a.slug.localeCompare(b.slug));
+  // 置顶随笔排在最前，组内仍按时间倒序；其余随笔维持时间倒序。
+  return notes.sort((a, b) => Number(b.pinned ?? false) - Number(a.pinned ?? false) ||
+    b.date.sortKey.localeCompare(a.date.sortKey) || a.slug.localeCompare(b.slug));
 }
 
 async function loadAbout(renderer: Renderer): Promise<AboutPage> {

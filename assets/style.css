@@ -11,7 +11,7 @@
   color-scheme:light;
   --bg:#fcd0b1; --surface:#ffe4cf; --surface-2:#efbc99;
   --heading:#000000; --text:#000000; --muted:#614d41; --border:#b48b70;
-  --brand:#000000; --accent:#000000; --accent-strong:#75412e; --accent-soft:#00000009;
+  --brand:#000000; --accent:#000000; --accent-strong:#75412e; --accent-soft:#00000009; --pin:#d23a15;
   --signal:var(--brand); --signal-text:var(--accent); --signal-soft:var(--accent-soft);
   --spark:var(--brand); --spark-text:var(--accent); --spark-soft:var(--accent-soft);
   --header-bg:#fcd0b1f2; --selection-bg:#000000; --selection-text:#fcd0b1;
@@ -30,7 +30,7 @@ html[data-theme='dark'] {
   color-scheme:dark;
   --bg:#211c19; --surface:#2d2520; --surface-2:#3b3029;
   --heading:#fcd0b1; --text:#f5decc; --muted:#c2a895; --border:#705a4b;
-  --brand:#fcd0b1; --accent:#fcd0b1; --accent-strong:#fff0e4; --accent-soft:#fcd0b110;
+  --brand:#fcd0b1; --accent:#fcd0b1; --accent-strong:#fff0e4; --accent-soft:#fcd0b110; --pin:#ff8f68;
   --header-bg:#211c19f2; --selection-bg:#fcd0b1; --selection-text:#211c19;
   --shadow-sm:0 1px 3px #0003; --shadow-md:0 10px 30px #0004; --shadow-lg:0 24px 80px #0009;
   --code-inline-bg:#3b3029; --pre-bg:#2d2520; --pre-border:#705a4b;
@@ -1353,6 +1353,8 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 .note-paper-link { display: flex; flex-direction: column; min-height: 250px; padding: 25px; color: var(--text); }
 .note-paper-meta,.note-item-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 11px; color: var(--muted); }
 .note-paper-meta time { font-family: var(--font-mono); }
+.note-pin { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: color-mix(in srgb, var(--pin) 14%, transparent); color: var(--pin); font-weight: 700; letter-spacing: .04em; }
+.note-pin svg { width: 13px; height: 13px; stroke-width: 2.4; }
 .note-paper-text { margin: 25px 0; font: 18px/1.9 var(--font-sans); color: var(--heading); display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
 .note-paper-read { display: flex; align-items: center; justify-content: space-between; margin-top: auto; color: var(--muted); font-size: 11px; }
 .note-paper-read svg { width: 15px; height: 15px; }

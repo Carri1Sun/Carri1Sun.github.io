@@ -28,6 +28,9 @@ export const icons = {
   ),
   moon: stroke('<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'),
   arrow: stroke('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>'),
+  pin: stroke(
+    '<line x1="12" x2="12" y1="17" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/>'
+  ),
 };
 
 const sloganHtml = (text: string): string =>
@@ -330,10 +333,14 @@ export function archivePage(site: SiteConfig, groups: ArchiveGroup[]): string {
 
 /* ---------------------------------- 随笔 ---------------------------------- */
 
+/** 置顶标记：首页纸片与随笔页共用。 */
+const notePinHtml = (note: Note): string =>
+  note.pinned ? `<span class="note-pin" title="置顶随笔">${icons.pin} 置顶</span>` : '';
+
 function notePaper(note: Note): string {
-  return `<article class="note-paper">
+  return `<article class="note-paper${note.pinned ? ' note-paper-pinned' : ''}">
     <a class="note-paper-link" href="${esc(note.url)}" aria-label="阅读 ${esc(note.date.display)} 的随笔">
-      <div class="note-paper-meta"><time datetime="${esc(note.date.datetime)}">${esc(note.date.iso)}</time></div>
+      <div class="note-paper-meta">${notePinHtml(note)}<time datetime="${esc(note.date.datetime)}">${esc(note.date.iso)}</time></div>
       <p class="note-paper-text">${esc(note.excerpt)}</p>
       <span class="note-paper-read">读这条 ${icons.arrow}</span>
     </a>
@@ -341,8 +348,8 @@ function notePaper(note: Note): string {
 }
 
 export function notesPage(site: SiteConfig, notes: Note[]): string {
-  const list = notes.map((note) => `<article class="note-item" id="${esc(note.slug)}" aria-label="${esc(note.date.display)} 的随笔">
-    <div class="note-item-meta"><a href="${esc(note.url)}"><time datetime="${esc(note.date.datetime)}">${esc(note.date.displayFull)}</time></a></div>
+  const list = notes.map((note) => `<article class="note-item${note.pinned ? ' note-item-pinned' : ''}" id="${esc(note.slug)}" aria-label="${esc(note.date.display)} 的随笔${note.pinned ? '（置顶）' : ''}">
+    <div class="note-item-meta">${notePinHtml(note)}<a href="${esc(note.url)}"><time datetime="${esc(note.date.datetime)}">${esc(note.date.displayFull)}</time></a></div>
     <div class="post-content note-content">${note.html}</div>
   </article>`).join('\n');
   return layout(site, {
