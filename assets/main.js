@@ -41,7 +41,7 @@
 
     function burst() {
       if (reducedMotion.matches || particles.size >= 60) return;
-      const colors = ['#ff0000', '#ff5546', '#ffbd69', '#fff1ce'];
+      const colors = ['var(--brand)', 'var(--cover-clay)', 'var(--cover-sage)', 'var(--cover-peach)'];
       for (let i = 0; i < 8 && particles.size < 60; i += 1) {
         const pixel = document.createElement('span');
         pixel.className = 'avatar-pixel';

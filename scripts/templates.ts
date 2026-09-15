@@ -84,6 +84,8 @@ export function layout(site: SiteConfig, page: LayoutPage): string {
   <link rel="apple-touch-icon" href="/assets/favicon.png">
   <link rel="alternate" type="application/rss+xml" title="${esc(site.title)}" href="/feed.xml">
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+  <link rel="preload" href="/assets/fonts/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/zcool-qingke-huangyou.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/style.css">
   ${themeBoot}
   <script src="/assets/main.js" defer></script>
