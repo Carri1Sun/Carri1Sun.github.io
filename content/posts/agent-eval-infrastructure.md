@@ -1,5 +1,6 @@
 ---
-title: 一个面向产品了解 Agent 的评测基建设计
+cover: rays
+title: 产品定义角度的 Agent Evals 框架功能设计
 date: 2026-09-09 14:16:00
 author: Kaiyi
 categories:

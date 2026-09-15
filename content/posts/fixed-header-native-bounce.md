@@ -1,5 +1,6 @@
 ---
-title: 顶部栏固定，页面保留回弹：一次被 Agent 绕复杂的 CSS 修改
+cover: rays
+title: 固定顶部栏+主体区域 Bounce 效果的前端实现经验
 date: 2026-09-14 15:55:49
 categories:
   - 工程实践
