@@ -7,6 +7,22 @@
   font-family:'ZCOOL QingKe HuangYou'; font-style:normal; font-weight:400;
   font-display:swap; src:url('/assets/fonts/zcool-qingke-huangyou.woff2') format('woff2');
 }
+@font-face {
+  font-family:'IBM Plex Sans'; font-style:normal; font-weight:400;
+  font-display:swap; src:url('/assets/fonts/ibm-plex-sans-regular.woff2') format('woff2');
+}
+@font-face {
+  font-family:'IBM Plex Sans'; font-style:normal; font-weight:500;
+  font-display:swap; src:url('/assets/fonts/ibm-plex-sans-medium.woff2') format('woff2');
+}
+@font-face {
+  font-family:'IBM Plex Sans SC'; font-style:normal; font-weight:400;
+  font-display:swap; src:url('/assets/fonts/ibm-plex-sans-sc-regular.woff2') format('woff2');
+}
+@font-face {
+  font-family:'IBM Plex Sans SC'; font-style:normal; font-weight:500;
+  font-display:swap; src:url('/assets/fonts/ibm-plex-sans-sc-medium.woff2') format('woff2');
+}
 :root {
   color-scheme:light;
   --bg:#fcd0b1; --surface:#ffe4cf; --surface-2:#efbc99;
@@ -22,7 +38,7 @@
   --code-number:#754521; --code-title:#345467; --code-attr:#69496d; --code-deletion:#843e2b;
   --cover-dark:#24201e; --cover-cream:#ffe4cf; --cover-clay:#b97756;
   --cover-sage:#bcc5a4; --cover-peach:#fcd0b1;
-  --font-sans:'Space Grotesk',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  --font-sans:'IBM Plex Sans','IBM Plex Sans SC','PingFang SC','Microsoft YaHei',sans-serif;
   --font-display:'Space Grotesk','ZCOOL QingKe HuangYou','PingFang SC','Microsoft YaHei',sans-serif;
   --font-mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
 }
@@ -1166,9 +1182,10 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 .post-header,.page-header{background:none;box-shadow:none;border:0;border-bottom:1px solid var(--border);border-radius:0;padding:0 0 35px;margin-bottom:45px;overflow:visible}
 .post-header::after,.page-header::after,.archive-item::before,.page-post .post-content h2::before{display:none}
 .post-kicker,.page-kicker{font:11px var(--font-mono);color:var(--accent);letter-spacing:.09em}
-.post-title,.page-title,.about-title{font-family:var(--font-display);font-weight:500;line-height:1.4}
+.page-title,.about-title{font-family:var(--font-display);font-weight:500;line-height:1.4}
+.post-title{font-family:var(--font-sans);font-weight:500;line-height:1.4}
 .post-title{font-size:clamp(30px,4vw,46px)}
-.post-content h2{padding:0 0 .5em;border-bottom:1px solid var(--border);font-family:var(--font-display);font-size:27px}
+.post-content h2{padding:0 0 .5em;border-bottom:1px solid var(--border);font-family:var(--font-sans);font-size:27px}
 .post-content{line-height:1.95}
 .post-content blockquote{border:0;border-left:2px solid var(--brand);background:var(--accent-soft);border-radius:0;box-shadow:none}
 .post-content img{border-radius:2px;box-shadow:var(--shadow-sm)}
@@ -1380,9 +1397,10 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
   .library-more { gap: 4px; }
 }
 
-/* 标题使用黄油体的原生单字重，避免浏览器合成粗体破坏圆角笔画。 */
-.post-title,.page-title,.about-title,.post-card-title,.post-content h2,
-.post-content h3,.post-content h4 { font-family:var(--font-display); font-weight:400; }
+/* 列表页、关于页与文章卡片标题沿用黄油体；文章大标题和正文内标题使用 IBM Plex。 */
+.page-title,.about-title,.post-card-title { font-family:var(--font-display); font-weight:400; }
+.post-title,.post-content h1,.post-content h2,.post-content h3,
+.post-content h4,.post-content h5,.post-content h6 { font-family:var(--font-sans); font-weight:500; }
 .press-description p { font-size:clamp(26px,3.2vw,40px); font-weight:700; line-height:1.45; }
 .library-heading h2 { font-family:var(--font-display); font-size:20px; font-weight:400; }
 .site-header { border-bottom:1px solid var(--border); }

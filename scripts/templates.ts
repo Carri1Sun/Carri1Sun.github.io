@@ -99,6 +99,8 @@ export function layout(site: SiteConfig, page: LayoutPage): string {
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
   <link rel="preload" href="/assets/fonts/space-grotesk.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="/assets/fonts/zcool-qingke-huangyou.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/ibm-plex-sans-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/assets/fonts/ibm-plex-sans-sc-regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/assets/style.css">
   ${themeBoot}
   <script src="/assets/main.js" defer></script>
