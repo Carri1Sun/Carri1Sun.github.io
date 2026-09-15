@@ -4,6 +4,13 @@
 (() => {
   'use strict';
 
+  // 图片加载失败时露出底层轨道图案；兼顾脚本执行前已失败的缓存请求。
+  document.querySelectorAll('[data-cover-image]').forEach((image) => {
+    const fallback = () => { image.hidden = true; };
+    image.addEventListener('error', fallback, { once: true });
+    if (image.complete && image.naturalWidth === 0) fallback();
+  });
+
   /* 只在打开文章时匹配所点击的标题，列表之间切换不移动书名。 */
   const clearArticleTransition = () => {
     for (const title of document.querySelectorAll('.book-title, .post-card-title')) {

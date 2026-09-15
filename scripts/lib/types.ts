@@ -1,5 +1,7 @@
 // 全站共享的类型定义。
 
+import type { PostCover } from './cover.ts';
+
 export interface SiteNavItem {
   label: string;
   href: string;
@@ -58,6 +60,7 @@ export interface TocEntry {
 }
 
 export interface Post {
+  cover: PostCover;
   slug: string;
   /** 形如 /posts/<slug>/ */
   url: string;

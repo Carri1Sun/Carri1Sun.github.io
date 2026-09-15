@@ -12,6 +12,7 @@ import { pathToFileURL } from 'node:url';
 import { Marked, type RendererObject, type Token, type Tokens } from 'marked';
 import hljs from 'highlight.js';
 import site from '../site.config.ts';
+import { parseCover } from './lib/cover.ts';
 import * as t from './templates.ts';
 import {
   escapeHtml,
@@ -113,6 +114,7 @@ async function loadPosts(renderer: Renderer): Promise<Post[]> {
 
     posts.push({
       slug,
+      cover: parseCover(data.cover),
       url: `/posts/${slug}/`,
       title: String(data.title ?? slug),
       date,

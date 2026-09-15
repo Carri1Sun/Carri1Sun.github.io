@@ -24,6 +24,7 @@ tags:
   - AI Agent
 excerpt: 忠实概括正文的一两句话。
 description: 用于 SEO 的简短描述，可省略。
+cover: orbit
 ---
 
 正文从这里开始。
@@ -32,6 +33,8 @@ description: 用于 SEO 的简短描述，可省略。
 
 小节内容。
 ```
+
+封面字段 `cover` 可省略（默认 `orbit`），支持 `orbit` / `frames` / `steps` / `rays` 或数字 `0` / `1` / `2` / `3`；图片放在 `assets/covers/`，填写 `/assets/covers/文件名.webp`，也可使用完整 HTTPS 图片地址。文件名大小写必须一致，不使用本机绝对路径。
 
 4. 正文无需重复一级标题；使用 `##`、`###` 组织章节，生成器会自动生成目录。使用标准 Markdown 链接、图片、列表和代码块。
 5. 文章会自动进入首页最新三本、按年份分组的“文章”页（`/archives/`）、搜索、标签页和 RSS。无需手动修改模板、导航或生成的书本封面。

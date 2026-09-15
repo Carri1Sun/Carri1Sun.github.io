@@ -1,4 +1,5 @@
 ---
+cover: frames
 title: "使用 agent 查找适合分镜的真实素材"
 date: 2026-08-25 01:07:00
 author: Kaiyi

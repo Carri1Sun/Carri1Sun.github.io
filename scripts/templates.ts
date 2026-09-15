@@ -179,14 +179,10 @@ function postCard(post: Post, index = 0): string {
         </article>`;
 }
 
-// 封面是站点自有的矢量图形，不依赖远程图片或 WebGL。
+// 预设封面使用 SVG；配置图片时保留轨道图案作为加载失败的回退。
 function bookCover(site: SiteConfig, post: Post, index: number): string {
   const number = String(index + 1).padStart(2, '0');
-  const motifs: Record<string, string> = {
-    'resource-optimize': 'frames', 'agent-evals-practice': 'orbit',
-    'agent-plan-design': 'steps', 'how-to-use-ai': 'rays',
-  };
-  const motif = motifs[post.slug] ?? 'orbit';
+  const { preset: motif, image } = post.cover;
   const art = motif === 'frames'
     ? '<rect x="25" y="25" width="190" height="120" rx="2"/><rect x="45" y="45" width="190" height="120" rx="2"/><rect x="65" y="65" width="190" height="120" rx="2"/><path d="M137 94l36 23-36 23z" fill="currentColor" stroke="none"/>'
     : motif === 'orbit'
@@ -203,7 +199,10 @@ function bookCover(site: SiteConfig, post: Post, index: number): string {
           <div class="book-front">
             <div class="book-top"><span>${esc(site.title.toUpperCase())}</span><span>${number}</span></div>
             <h3 class="book-title" style="--article-transition:${articleTransition(post)}">${esc(post.title)}</h3>
-            <svg class="book-art" viewBox="0 0 280 220" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">${art}</svg>
+            <div class="book-art${image ? ' book-art-image' : ''}">
+              <svg viewBox="0 0 280 220" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">${art}</svg>
+              ${image ? `<img class="book-cover-image" src="${esc(image)}" alt="" loading="lazy" decoding="async" data-cover-image>` : ''}
+            </div>
             <div class="book-bottom"><span>${esc(post.categories[0] ?? '随笔')}</span><span>${esc(post.date.year)}</span></div>
           </div>
         </div>

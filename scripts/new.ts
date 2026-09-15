@@ -55,6 +55,7 @@ const frontmatter = [
   'categories: []',
   'tags: []',
   'excerpt: ""',
+  'cover: orbit',
   '---',
   '',
   '<!-- 从这里开始写作；分类/标签/摘要直接改上面的 frontmatter，格式参考现有文章 -->',
