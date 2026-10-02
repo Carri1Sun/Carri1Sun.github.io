@@ -11,7 +11,7 @@
 ## 添加文章
 
 1. 阅读 `content/posts/` 中的现有格式，选择唯一、简短的文件名，优先使用小写英文与连字符，例如 `agent-evals-practice.md`。文件名决定 `/posts/<slug>/` 地址；修改已有文章标题时保留文件名，避免破坏链接。
-2. 在 `content/posts/` 新建 `.md` 文件。可使用 `npm run new -- "文章标题" article-slug` 生成脚手架，再填入正文。该命令仅用于文章。
+2. 在 `content/posts/` 新建 `.md` 文件。优先使用 addblog skill，或运行 `npm run new:post -- --title "文章标题" [--slug 文件名] [其他选项]` 生成标准 frontmatter 与空稿（旧命令 `npm run new -- "文章标题" [文件名]` 仍可用）。
 3. 按以下格式填写 frontmatter。`title`、`date` 必须提供；分类、标签、摘要和 SEO 描述按内容需要填写。作者沿用 `site.config.ts` 中的 Kaiyi。
 
 ```markdown
@@ -41,7 +41,7 @@ cover: orbit
 
 ## 添加随笔
 
-1. 在 `content/notes/` 新建唯一的 `.md` 文件，例如 `2026-09-07-small-interaction.md`。文件名决定永久锚点 `/notes/#<slug>`，发布后保持稳定。
+1. 优先使用 addnote skill，或运行 `npm run new:note -- --slug short-slug [--date "YYYY-MM-DD HH:mm:ss"] [--pinned] [--body "..."]` 生成草稿。文件名为 `<YYYY-MM-DD>-<slug>.md`，例如 `2026-09-07-small-interaction.md`。文件名决定永久锚点 `/notes/#<slug>`，发布后保持稳定。
 2. 随笔无需标题，frontmatter 只需日期，正文直接使用用户给出的短内容。支持多段文字、Markdown 链接和图片。需要置顶时添加 `pinned: true`，可多条同时置顶。
 
 ```markdown
