@@ -11,7 +11,7 @@
 ## 添加文章
 
 1. 阅读 `content/posts/` 中的现有格式，选择唯一、简短的文件名，优先使用小写英文与连字符，例如 `agent-evals-practice.md`。文件名决定 `/posts/<slug>/` 地址；修改已有文章标题时保留文件名，避免破坏链接。
-2. 在 `content/posts/` 新建 `.md` 文件。优先使用 addblog skill，或运行 `npm run new:post -- --title "文章标题" [--slug 文件名] [其他选项]` 生成标准 frontmatter 与空稿（旧命令 `npm run new -- "文章标题" [文件名]` 仍可用）。
+2. 在 `content/posts/` 新建 `.md` 文件。优先使用 addEmptyBlog skill，或运行 `npm run new:post -- --title "文章标题" [--slug 文件名]` 生成标准 frontmatter 与空稿（旧命令 `npm run new -- "文章标题" [文件名]` 仍可用）。
 3. 按以下格式填写 frontmatter。`title`、`date` 必须提供；分类、标签、摘要和 SEO 描述按内容需要填写。作者沿用 `site.config.ts` 中的 Kaiyi。
 
 ```markdown

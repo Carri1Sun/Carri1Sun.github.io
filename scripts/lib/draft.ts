@@ -30,7 +30,7 @@ export function isValidDate(value: string): boolean {
   const match = /^(\d{4})-(\d{2})-(\d{2})(?: (\d{2}):(\d{2}):(\d{2}))?$/.exec(value);
   if (!match) return false;
   const [, y = '', mo = '', d = '', h = '00', mi = '00', s = '00'] = match;
-  const date = new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}`);
+  const date = new Date(`${y}-${mo}-${d}T${h}:${mi}:${s}Z`);
   return (
     !Number.isNaN(date.getTime()) &&
     date.getUTCFullYear() === +y &&
