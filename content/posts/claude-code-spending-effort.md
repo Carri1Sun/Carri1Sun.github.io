@@ -48,7 +48,13 @@ https://claude.dev/blog/spending-your-effort/?via=dailydev
 
 怎么样选择 effort 取决于工作后给你想要什么，
 
+其实它给每一个effort指明了应该什么时候做：
+1. low effort：适合快速迭代之类的事情。
+2. medium effort：适合大部分日常工作。
+3. high effort：适合日常工作里带很多 edge case或verification的内容。
+4. max：适合完全独立地让claude去找那些事情，自动化地完成很多事情、解决一个问题。
 
+但我感觉，这对一个人该怎么选effort其实没有任何帮助。因为如果一个人自己很知道怎么对事情进行建模，那他其实早就会这样去试了。而那些又不懂这个东西，又自己不够勤奋，没有建模每一个自己遇到的问题的人，总是会偷懒去选最高级的。
 
 https://platform.claude.com/docs/en/about-claude/models/choosing-a-model
 
