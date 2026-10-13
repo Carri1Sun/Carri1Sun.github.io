@@ -10,7 +10,7 @@ excerpt: ""
 
 首先是因为这个事情跟我最近做的工作主题「评测」关联性也很强，另外，它是最接近普通人的评测，我们大家在用模型或者用 agent 的时候现在往往都会有选择困难症，我们会综合速度，开销，以及比较抽象的“性能”一词去权衡考虑，这之中最令人没头绪的往往是性能这个词（哦！又一个抽象词汇，前两天我刚刚喷过爱用抽象词汇的人）。所以我觉得搞清楚此问题是必要的。
 
-anthropic 虽然反华且封号严重，但是他们内部人员在分享知识层面真的是堪称做慈善，那么在本文接下来的篇章中，我们一起读一下这四篇 anthropic 的文章，他们里面讲的内容大差不差。大概讲到了不同尺寸的模型，同个模型不同 effort 下的从原理和使用 case 上的区别。然后对于怎么选择给出了一些指导意见。
+anthropic 虽然反华且封号严重，但是他们内部人员在分享知识层面真的是堪称做慈善，在本文接下来的篇章中，我们一起读一下这四篇 anthropic 的文章，他们里面讲的内容大差不差。大概讲到了不同尺寸的模型，同个模型不同 effort 下的从原理和使用 case 上的区别。然后对于怎么选择给出了一些指导意见。
 
 https://claude.dev/blog/spending-your-effort/?via=dailydev
 
@@ -24,9 +24,31 @@ https://claude.dev/blog/spending-your-effort/?via=dailydev
 
 首先是对于 effort 是什么，作者说感性地对effort进行理解，就是你希望在这个任务上耗费多少计算资源。大多数时候，这关乎你怎么对这个任务的难度进行建模。举具体例子的话，就是人怎么响应老板的需求。假如老板让你做一个事情做12个小时，那你肯定会觉得老板让你把这件事情做得非常非常细。如果老板只让你做一个小时，那你其实会觉得，老板只是要给他一个初版，然后在此基础上再迭代。
 
-实际上，我找到了几篇技术报告。其中一篇是GPTOSS model的训练报告，里面明确说low、medium和high三个raising level是分开训的。训练的时候，不同阶段模型的chain of thought是增加的。
+> 实际上，我找到了几篇技术报告。其中一篇是GPTOSS model的训练报告，里面明确说low、medium和high三个raising level是分开训的。训练的时候，不同阶段模型的chain of thought是增加的。
+>
+> 我之前以为 effort 就是调整一下 thinking budget，调研了一下之后发现并不是。实际上，模型是在不同的训练语料下进行了训练，显著区分语料不同的点可能包括 chain of thought 长度情况，包括规划，agent 决策等等数据，然后最后在一个统一的模型里才能返回出这样的结果，也就是你可以选择的结果。从我的理解来说，effort 可能不仅影响你的 thinking budget 应该多长，还影响到agent在进行规划时应该怎么规划任务。比如low effort可能规划出来的任务是一个相对简单的执行过程；如果是high effort，它在规划时产出的结果就会比较复杂，即使没有thinking。
 
-effort并不是简单地调整一下thinking budget，然后模型就会响应出对应的效果。实际上，是在不同的rating，或者说训练语料的chain of thought长度情况下都进行了训练，然后最后在一个统一的模型里才能返回出这样的结果，也就是你可以选择的结果。从我的理解来说，effort可能不仅影响你的thinking budget应该多长，还影响到agent在进行规划时应该怎么规划任务。比如low effort可能规划出来的任务是一个相对简单的执行过程；如果是high effort，它在规划时产出的结果就会比较复杂，即使没有thinking。
+然后，从公开的 evals 结论角度看（文章引用的是 terminal bench 3.0），更高的 effort 反映出的就是更多的 tokens per attempt 以及更高的完成率
+
+但是 evals 结果并不能直观的展示出在实际使用中有什么区别
+
+文章里有这么一句话，我非常喜欢
+
+> The best way to understand how models work is to run experiments. 
+
+第一个例子是对于比较发散性的，确认的细节不多的构建任务，Underspecified build task，作者让不同 effort 强度的 claude 去构建，high effort 做出来的明显细节更多，功能更多。
+
+然后是对于轻度，有一部分内容确定的任务，Lightly specified design task
+
+这里他用的实际例子是，他相对 claude code 的 config 列表进行一次重新设计，用 low effort，claude 给了他一个操作，用 max effort，claude 给他了一个完整的 mockup 程序，并且还有一堆讲解入口，对于这个 case，他 prefer 用 low effort 去跟 claude 协作
+
+然后是对于 Highly specified build task，他让 claude 对他进行了一个访谈，一起细化了一个 fitness app 的设计，然后给不同的模型不同的效果，最后发现实际产出的效果是差不多的，在他的实验中，一个有明显区别的地方时，max effort 做了一些细节上的简化。
+
+这一段整体的 takeaways 是
+
+怎么样选择 effort 取决于工作后给你想要什么，
+
+
 
 https://platform.claude.com/docs/en/about-claude/models/choosing-a-model
 
