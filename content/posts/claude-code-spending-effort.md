@@ -56,8 +56,33 @@ https://claude.dev/blog/spending-your-effort/?via=dailydev
 
 但我感觉，这对一个人该怎么选effort其实没有任何帮助。因为如果一个人自己很知道怎么对事情进行建模，那他其实早就会这样去试了。而那些又不懂这个东西，又自己不够勤奋，没有建模每一个自己遇到的问题的人，总是会偷懒去选最高级的。
 
+总来说，这个是比较感性的一个感受
+
+https://claude.com/resources/articles/claude-model-and-effort-level-in-claude-code
+
+接下来看第二篇文章
+
+### 整体的概述
+
+Model 代表什么？Model 技术上 model 代表了 the set of fixed weights，感性点理解就是 the overall capability range of the model
+
+Effort 不仅仅是 thinking time（跟前面的调研也对上了），Effort 同时代表 Claude 打算读度搜好文件，使用多少工具以及打算进行多少步骤。
+
+对日常的任务用小模型，对复杂或者模糊的任务（ambiguous，这个我觉得非常重要）用大模型，Anthropic 建议你基于你的工作类型去选择偏好并且适应它，不要针对逐个任务去调整 model
+
+如果 Claude 已经掌握了所有相关上下文，明显努力尝试过，却仍然做错了，那就说明应该选择一个能力更强的模型。如果 Claude 出错是因为漏掉了一个文件、没有运行测试，或者重构做到一半就放弃了，那就应该选择更高的努力级别。
+
+### Claude Code 的 Effort 和 Model 选项
+
+
+
+### 模型是怎么工作的
+
+
+
+
+
 https://platform.claude.com/docs/en/about-claude/models/choosing-a-model
 
 https://academy.claude.com/tutorials/choosing-the-right-effort-level-in-claude-code
 
-https://claude.com/resources/articles/claude-model-and-effort-level-in-claude-code
