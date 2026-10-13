@@ -14,6 +14,20 @@ anthropic 虽然反华且封号严重，但是他们内部人员在分享知识�
 
 https://claude.dev/blog/spending-your-effort/?via=dailydev
 
+第一篇文章首先讲到 claude code 支持在切换 effort 时，不会干扰 cache hit。这个其实说明一个问题：他说挺多用户喜欢这个，但实际上反馈的一个问题是，用户在使用他们的claude code时，切换effort的诉求还是挺多的。并且同时也有用户提出质疑吧，就是effort到底是个什么东西。
+
+他自己通过专业的评测反馈的结果，以及自己做了一些测试，深入研究了一下effort是个什么东西。
+
+他的宏观解释是：在high effort的时候，模型倾向于做更多验证、想到更多边界case，并进行测试。在一些领域，比如硬件测试、代码review，还有安全领域，这些领域模型表现得显著更好。
+
+对于日常软件开发，他自己的习惯是使用low effort对作者本人自己进行访谈、实现，最后再用high effort进行review。
+
+首先是对于 effort 是什么，作者说感性地对effort进行理解，就是你希望在这个任务上耗费多少计算资源。大多数时候，这关乎你怎么对这个任务的难度进行建模。举具体例子的话，就是人怎么响应老板的需求。假如老板让你做一个事情做12个小时，那你肯定会觉得老板让你把这件事情做得非常非常细。如果老板只让你做一个小时，那你其实会觉得，老板只是要给他一个初版，然后在此基础上再迭代。
+
+实际上，我找到了几篇技术报告。其中一篇是GPTOSS model的训练报告，里面明确说low、medium和high三个raising level是分开训的。训练的时候，不同阶段模型的chain of thought是增加的。
+
+effort并不是简单地调整一下thinking budget，然后模型就会响应出对应的效果。实际上，是在不同的rating，或者说训练语料的chain of thought长度情况下都进行了训练，然后最后在一个统一的模型里才能返回出这样的结果，也就是你可以选择的结果。从我的理解来说，effort可能不仅影响你的thinking budget应该多长，还影响到agent在进行规划时应该怎么规划任务。比如low effort可能规划出来的任务是一个相对简单的执行过程；如果是high effort，它在规划时产出的结果就会比较复杂，即使没有thinking。
+
 https://platform.claude.com/docs/en/about-claude/models/choosing-a-model
 
 https://academy.claude.com/tutorials/choosing-the-right-effort-level-in-claude-code
