@@ -1,6 +1,8 @@
 // 全站 HTML / XML 模板。所有动态文本经 escapeHtml 转义后输出。
 
 import { escapeHtml as esc, tagUrl } from './lib/utils.ts';
+import { icons, stroke } from './lib/icons.ts';
+import { Header } from './components/header.ts';
 import type {
   AboutPage,
   ArchiveGroup,
@@ -12,40 +14,9 @@ import type {
   TocEntry,
 } from './lib/types.ts';
 
-/* ---------------------------------- 内联 SVG 图标 ---------------------------------- */
-
-const stroke = (paths: string): string =>
-  `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
-
-export const icons = {
-  github:
-    '<svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>',
-  rss: stroke('<path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/>'),
-  search: stroke('<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>'),
-  close: stroke('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>'),
-  sun: stroke(
-    '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
-  ),
-  moon: stroke('<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'),
-  arrow: stroke('<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>'),
-  pin: stroke(
-    '<line x1="12" x2="12" y1="17" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/>'
-  ),
-};
-
 const sloganHtml = (text: string): string =>
   esc(text)
     .replace('寿司郎', '<span class="slogan-hand">寿司郎</span>');
-
-/** 作者头像彩蛋：按住旋转并放出像素烟花，挂在标题栏品牌区。 */
-const avatarCoinHtml = (site: SiteConfig): string =>
-  `<button class="avatar-coin" type="button" data-avatar-flip aria-label="按住 ${esc(site.author)} 的头像旋转并放出像素烟花" aria-pressed="false" disabled>
-    <span class="avatar-coin-inner" aria-hidden="true">
-      <span class="avatar-coin-front"><img src="${esc(site.avatar)}" alt="" width="72" height="72"></span>
-      <span class="avatar-coin-back"><img src="${esc(site.avatar)}" alt="" width="72" height="72"></span>
-    </span>
-    <span class="avatar-sparks" aria-hidden="true"></span>
-  </button>`;
 
 /* ---------------------------------- 页面骨架 ---------------------------------- */
 
@@ -65,12 +36,6 @@ const themeBoot = `<script>(function(){try{var t=localStorage.getItem('theme');i
 export function layout(site: SiteConfig, page: LayoutPage): string {
   const url = `${site.url}${page.path}`;
   const ogImage = `${site.url}/assets/og.png`;
-  const nav = site.nav
-    .map((item) => {
-      const isActive = item.key === page.active;
-      return `<a class="nav-link${isActive ? ' active' : ''}" href="${esc(item.href)}"${isActive ? ' aria-current="page"' : ''}>${esc(item.label)}</a>`;
-    })
-    .join('\n');
 
   return `<!doctype html>
 <html lang="${esc(site.lang)}">
@@ -107,27 +72,8 @@ export function layout(site: SiteConfig, page: LayoutPage): string {
 </head>
 <body class="${esc(page.bodyClass)}">
   <a class="skip-link" href="#main">跳到正文</a>
-  <div class="progress-bar" aria-hidden="true"></div>
 
-  <header class="site-header">
-    <div class="container header-inner">
-      <div class="header-brand">
-        ${avatarCoinHtml(site)}
-        <a class="site-title" href="/" aria-label="${esc(site.title)}">
-          <span class="site-title-text">${esc(site.title)}</span>
-        </a>
-      </div>
-      <nav class="site-nav" aria-label="主导航">
-        ${nav}
-        <button class="icon-button" type="button" data-search-open aria-label="搜索（Ctrl+K）" title="搜索 Ctrl+K">${icons.search}</button>
-        <button class="icon-button" type="button" data-theme-toggle aria-label="切换明暗主题" title="切换主题">
-          <span class="theme-icon theme-icon-sun">${icons.sun}</span>
-          <span class="theme-icon theme-icon-moon">${icons.moon}</span>
-        </button>
-      </nav>
-    </div>
-  </header>
-  <div class="site-header-spacer" aria-hidden="true"></div>
+  ${Header(site, { active: page.active, variant: page.bodyClass === 'page-home' ? 'home' : 'inner' })}
 
   <main id="main" class="container${page.bodyClass === 'page-post' ? ' container-wide' : ''}">
 ${page.content}
@@ -253,16 +199,37 @@ export function homePage(site: SiteConfig, posts: Post[], total: number, notes: 
 
 /* ---------------------------------- 文章页 ---------------------------------- */
 
-function tocHtml(toc: TocEntry[]): string {
-  if (!toc.length) return '';
-  const items = toc
-    .map(
-      (h) =>
-        `<a class="toc-link toc-lv${h.depth}" href="#${esc(h.id)}">${esc(h.text)}</a>`
-    )
-    .join('\n');
-  return `      <aside class="toc" aria-label="目录">
-        <nav class="toc-nav">${items}</nav>
+function tocHtml(post: Post): string {
+  // 子目录归入前一个二级标题；只有三级标题的文章仍可完整导航。
+  const groups: { heading: TocEntry; children: TocEntry[] }[] = [];
+  for (const heading of post.toc) {
+    const parent = groups.at(-1);
+    if (heading.depth === 3 && parent?.heading.depth === 2) parent.children.push(heading);
+    else groups.push({ heading, children: [] });
+  }
+  const link = (h: TocEntry): string =>
+    `<a class="toc-link toc-lv${h.depth}" href="#${esc(h.id)}"><span class="tree-branch" aria-hidden="true">└</span><span>${esc(h.text)}</span></a>`;
+  const items = groups.map(({ heading, children }, index) => `<div class="toc-group">
+            <div class="toc-row">${link(heading)}${children.length ? `<button class="toc-group-toggle" type="button" aria-label="收起 ${esc(heading.text)} 的子目录" aria-expanded="true" aria-controls="toc-children-${index}"><span aria-hidden="true">⌄</span></button>` : ''}</div>
+            ${children.length ? `<div class="toc-children" id="toc-children-${index}">${children.map(link).join('\n')}</div>` : ''}
+          </div>`).join('\n');
+  return `      <aside class="toc" aria-label="阅读导航">
+        <a class="toc-title" href="#post-title" tabindex="-1" aria-hidden="true">${esc(post.title)}</a>
+        <div class="toc-menu">
+          <div class="toc-menu-header"><p class="rail-label">${items ? '目录 / TREE' : '阅读 / READ'}</p><button class="toc-mode-toggle" type="button" data-reading-mode-toggle aria-label="隐藏阅读栏，进入沉浸阅读" aria-pressed="false" title="沉浸阅读">${stroke('<polyline points="12 5 5 12 12 19"/><line x1="5" y1="12" x2="21" y2="12"/>')}</button></div>
+          ${items ? `<nav class="toc-nav" aria-label="文章目录">${items}</nav>` : ''}
+        </div>
+        <div class="reading-progress" role="progressbar" aria-label="阅读进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span class="progress-cells" aria-hidden="true"><b></b><span>${'░'.repeat(28)}</span></span>
+          <span class="progress-percent" aria-hidden="true">00%</span>
+        </div>
+        <p class="reading-hint">按 <kbd>↑</kbd> / <kbd>↓</kbd> 滚动阅读</p>
+        <div class="reading-actions">
+          <p class="rail-label">分享 / SHARE</p>
+          <button type="button" data-copy-post-url><span class="tree-branch" aria-hidden="true">└</span><span>复制文章链接</span></button>
+          <a href="#post-title"><span class="tree-branch" aria-hidden="true">└</span><span>回到标题 ↑</span></a>
+          <span class="sr-only" data-copy-post-status role="status"></span>
+        </div>
       </aside>`;
 }
 
@@ -273,9 +240,7 @@ interface PostNeighbors {
 
 export function postPage(site: SiteConfig, post: Post, { prev, next }: PostNeighbors): string {
   const tags = (post.tags ?? []).map((tag) => `<a class="tag" href="${esc(tagUrl(tag))}">#${esc(tag)}</a>`).join('');
-  const category = post.categories.length
-    ? `<span class="chip">${esc(post.categories[0] ?? '')}</span>`
-    : '';
+  const categories = post.categories.map((category) => `<span class="chip">${esc(category)}</span>`).join('');
 
   const navLink = (p: Post | null, label: string): string =>
     p
@@ -284,29 +249,37 @@ export function postPage(site: SiteConfig, post: Post, { prev, next }: PostNeigh
 
   const content = `    <article class="post">
       <header class="post-header">
-        <p class="post-kicker">FIELD NOTE / ${esc(post.categories[0] ?? 'IDEA')}</p>
-        <div class="post-meta">
-          <time datetime="${esc(post.date.datetime)}">${esc(post.date.displayFull)}</time>
-          <span class="meta-dot">·</span>
-          <span>${post.words} 字 · 约 ${post.minutes} 分钟</span>
-          ${category}
-        </div>
-        <h1 class="post-title" style="--article-transition:${articleTransition(post)}">${esc(post.title)}</h1>
+        <div class="post-categories">${categories || '<span class="chip">文章 / ARTICLE</span>'}</div>
+        <h1 class="post-title" id="post-title" style="--article-transition:${articleTransition(post)}">${esc(post.title)}</h1>
+        ${post.excerpt ? `<p class="post-intro">${esc(post.excerpt)}</p>` : ''}
         ${tags ? `<div class="post-tags">${tags}</div>` : ''}
+        <dl class="post-byline">
+          <div><dt>作者 / AUTHOR</dt><dd><span class="tree-branch" aria-hidden="true">└</span><a href="/about/" rel="author">${esc(site.author)}</a></dd></div>
+          <div><dt>发布于 / PUBLISHED</dt><dd><span class="tree-branch" aria-hidden="true">└</span><time datetime="${esc(post.date.datetime)}" title="${esc(post.date.displayFull)}">${esc(post.date.display)}</time></dd></div>
+          <div><dt>阅读时长 / READ TIME</dt><dd><span class="tree-branch" aria-hidden="true">└</span><span>约 ${post.minutes} 分钟 <span class="post-word-count">/ ${post.words} 字</span></span></dd></div>
+        </dl>
       </header>
 
       <div class="post-layout">
+        <span data-toc-anchor hidden></span>
+${tocHtml(post)}
         <div class="post-content">
 ${post.html}
         </div>
-${tocHtml(post.toc)}
       </div>
 
       <nav class="post-nav" aria-label="文章导航">
+        <div class="post-nav-inner">
 ${navLink(prev, '← 上一篇')}
 ${navLink(next, '下一篇 →')}
+        </div>
       </nav>
-    </article>`;
+    </article>
+    <button class="reading-mode-toggle" type="button" data-reading-mode-toggle aria-label="显示目录" aria-pressed="false">${icons.menu}</button>
+    ${post.toc.length ? `<button class="toc-drawer-toggle" type="button" data-toc-drawer-open aria-label="打开目录" aria-haspopup="dialog" aria-controls="toc-drawer" aria-expanded="false">${icons.menu}</button>
+    <dialog class="toc-drawer" id="toc-drawer" aria-labelledby="toc-drawer-heading">
+      <div class="toc-drawer-header"><h2 id="toc-drawer-heading">文章目录</h2><button class="icon-button" type="button" data-toc-drawer-close aria-label="关闭目录">${icons.close}</button></div>
+    </dialog>` : ''}`;
 
   return layout(site, {
     title: `${post.title} · ${site.title}`,

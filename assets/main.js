@@ -5,7 +5,7 @@
   'use strict';
 
   // 保留根页面原生滚动与回弹；只测量 fixed 顶部栏的文档流占位。
-  const fixedHeader = document.querySelector('.site-header');
+  const fixedHeader = document.querySelector('[data-header-mode="fixed"]');
   const headerSpacer = document.querySelector('.site-header-spacer');
   if (fixedHeader && headerSpacer && 'ResizeObserver' in window) {
     const measureHeader = () => {
@@ -218,56 +218,191 @@
       if (stored !== 'light' && stored !== 'dark') setTheme(event.matches ? 'dark' : 'light');
     });
 
-  /* ---------------------------------- 阅读进度条 ---------------------------------- */
+  /* ---------------------------------- 文章阅读导航 ---------------------------------- */
 
-  const progressBar = document.querySelector('.progress-bar');
-  if (progressBar && document.body.classList.contains('page-post')) {
-    const update = () => {
-      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-      const ratio = scrollable > 0 ? window.scrollY / scrollable : 0;
-      progressBar.style.width = `${Math.min(100, ratio * 100)}%`;
+  const postContent = document.querySelector('.page-post .post-content');
+  if (postContent) {
+    const progress = document.querySelector('.reading-progress');
+    const filled = progress?.querySelector('.progress-cells b');
+    const remaining = progress?.querySelector('.progress-cells > span');
+    const percent = progress?.querySelector('.progress-percent');
+    const toc = document.querySelector('.toc');
+    const railTitle = toc?.querySelector('.toc-title');
+    const title = document.querySelector('.post-title');
+    const drawer = document.querySelector('.toc-drawer');
+    const drawerTrigger = document.querySelector('[data-toc-drawer-open]');
+    const tocAnchor = document.querySelector('[data-toc-anchor]');
+    const desktop = window.matchMedia('(min-width: 1001px)');
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const readingOffset = () => (fixedHeader?.getBoundingClientRect().height ?? 0) + 24;
+    const links = [...document.querySelectorAll('.toc-link')];
+    const entries = links.map((link) => ({
+      link,
+      heading: document.getElementById(decodeURIComponent(link.hash.slice(1))),
+    })).filter((entry) => entry.heading);
+    const groups = [...document.querySelectorAll('.toc-group')];
+    const expandedGroups = new Map();
+    let currentLink;
+    let lastPercent = -1;
+    let frame = 0;
+
+    const resetDrawer = () => {
+      document.documentElement.classList.remove('toc-drawer-open');
+      drawerTrigger?.setAttribute('aria-expanded', 'false');
     };
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    update();
-  }
+    const closeDrawer = () => {
+      if (drawer?.open) drawer.close();
+      resetDrawer();
+    };
+    const syncMenu = () => {
+      closeDrawer();
+      if (desktop.matches) tocAnchor?.after(toc);
+      else if (drawer && toc) drawer.append(toc);
+    };
+    syncMenu();
+    desktop.addEventListener('change', syncMenu);
+    drawerTrigger?.addEventListener('click', () => {
+      if (desktop.matches || drawer.open) return;
+      drawer.showModal();
+      document.documentElement.classList.add('toc-drawer-open');
+      drawerTrigger.setAttribute('aria-expanded', 'true');
+      drawer.querySelector('[data-toc-drawer-close]')?.focus({ preventScroll: true });
+    });
+    drawer?.querySelector('[data-toc-drawer-close]')?.addEventListener('click', closeDrawer);
+    drawer?.addEventListener('close', resetDrawer);
+    drawer?.addEventListener('click', (event) => {
+      if (event.target !== drawer) return;
+      const rect = drawer.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) closeDrawer();
+    });
 
-  /* ---------------------------------- 目录高亮 ---------------------------------- */
+    const setGroupExpanded = (group, expanded) => {
+      const children = group.querySelector('.toc-children');
+      if (!children) return;
+      children.hidden = !expanded;
+      const button = group.querySelector('.toc-group-toggle');
+      button?.setAttribute('aria-expanded', String(expanded));
+      const heading = group.querySelector('.toc-row .toc-link > span:last-child')?.textContent;
+      button?.setAttribute('aria-label', `${expanded ? '收起' : '展开'} ${heading} 的子目录`);
+    };
+    toc?.addEventListener('click', (event) => {
+      const button = event.target.closest('.toc-group-toggle');
+      if (!button) return;
+      const group = button.closest('.toc-group');
+      const expanded = button.getAttribute('aria-expanded') !== 'true';
+      expandedGroups.set(group, expanded);
+      setGroupExpanded(group, expanded);
+    });
 
-  const tocLinks = [...document.querySelectorAll('.toc-link')];
-  if (tocLinks.length && 'IntersectionObserver' in window) {
-    const idToLink = new Map(
-      tocLinks.map((link) => [decodeURIComponent(link.hash.slice(1)), link])
-    );
-    const headings = [...idToLink.keys()]
-      .map((id) => document.getElementById(id))
-      .filter(Boolean);
-
-    let activeId = headings[0]?.id;
-    const setActive = () => {
-      for (const [id, link] of idToLink) {
-        link.classList.toggle('active', id === activeId);
+    const updateReading = () => {
+      frame = 0;
+      // 正文读完即达到 100%；相邻文章导航与页脚不计入阅读长度。
+      const end = postContent.getBoundingClientRect().bottom + window.scrollY - window.innerHeight;
+      const ratio = end > 0 ? Math.max(0, Math.min(1, window.scrollY / end)) : 1;
+      const value = Math.round(ratio * 100);
+      if (value !== lastPercent) {
+        const count = Math.round(28 * ratio);
+        if (filled) filled.textContent = '▓'.repeat(count);
+        if (remaining) remaining.textContent = '░'.repeat(28 - count);
+        if (percent) percent.textContent = `${String(value).padStart(2, '0')}%`;
+        progress?.setAttribute('aria-valuenow', String(value));
+        lastPercent = value;
       }
-    };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) activeId = entry.target.id;
+      let active = entries[0];
+      for (const entry of entries) {
+        if (entry.heading.getBoundingClientRect().top <= Math.max(readingOffset(), window.innerHeight * 0.4)) active = entry;
+      }
+      if (ratio === 1 && entries.length) active = entries.at(-1);
+      if (active?.link !== currentLink) {
+        currentLink = active?.link;
+        for (const { link } of entries) {
+          const selected = link === currentLink;
+          link.classList.toggle('active', selected);
+          if (selected) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
         }
-        setActive();
-      },
-      // 顶部偏移避开吸顶导航：视口上沿 1/3 处的标题视为“当前”标题
-      { rootMargin: '-15% 0px -70% 0px', threshold: 0 }
-    );
-    headings.forEach((heading) => observer.observe(heading));
-    setActive();
+        for (const group of groups) {
+          const selected = !!currentLink && group.contains(currentLink);
+          group.classList.toggle('is-current', selected);
+          // 手动展开/收起优先；未操作的章节继续随阅读位置展开。
+          setGroupExpanded(group, expandedGroups.get(group) ?? selected);
+        }
+      }
+      const showTitle = !desktop.matches || (!!title && title.getBoundingClientRect().bottom < readingOffset());
+      railTitle?.classList.toggle('is-visible', showTitle);
+      railTitle?.setAttribute('aria-hidden', String(!showTitle));
+      if (railTitle) railTitle.tabIndex = showTitle ? 0 : -1;
+    };
+    const scheduleReading = () => {
+      if (!frame) frame = requestAnimationFrame(updateReading);
+    };
+    const modeButtons = [...document.querySelectorAll('[data-reading-mode-toggle]')];
+    const setImmersive = (immersive, preservePosition = true) => {
+      const anchor = preservePosition ? [...document.querySelectorAll('.post-header > *, .post-content > *')]
+        .find((element) => element.getBoundingClientRect().bottom > readingOffset()) : null;
+      const before = anchor?.getBoundingClientRect().top;
+      document.body.classList.toggle('is-immersive', immersive);
+      modeButtons.forEach((button) => button.setAttribute('aria-pressed', String(immersive)));
+      if (anchor) window.scrollTo({ top: window.scrollY + anchor.getBoundingClientRect().top - before, behavior: 'instant' });
+      scheduleReading();
+    };
+    for (const button of modeButtons) {
+      button.addEventListener('click', () => {
+        const immersive = !document.body.classList.contains('is-immersive');
+        setImmersive(immersive);
+        try { localStorage.setItem('reading-mode', immersive ? 'immersive' : 'full'); } catch { /* 隐私模式下不保存偏好。 */ }
+        document.querySelector(immersive ? '.reading-mode-toggle' : '.toc-mode-toggle')?.focus({ preventScroll: true });
+      });
+    }
+    try { setImmersive(localStorage.getItem('reading-mode') === 'immersive', false); } catch { /* 沿用默认阅读布局。 */ }
+    window.addEventListener('scroll', scheduleReading, { passive: true });
+    window.addEventListener('resize', scheduleReading);
+    window.addEventListener('pageshow', scheduleReading);
+    window.addEventListener('hashchange', scheduleReading);
+    if ('ResizeObserver' in window) new ResizeObserver(scheduleReading).observe(postContent.closest('.post'));
+    document.fonts?.ready.then(scheduleReading);
+    updateReading();
 
-    document.querySelector('.toc')?.addEventListener('click', (event) => {
-      const link = event.target.closest('.toc-link');
+    toc?.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const link = event.target.closest('a[href^="#"]');
       if (!link) return;
-      activeId = decodeURIComponent(link.hash.slice(1));
-      setActive();
+      const target = document.getElementById(decodeURIComponent(link.hash.slice(1)));
+      if (!target) return;
+      event.preventDefault();
+      if (!desktop.matches) closeDrawer();
+      if (window.location.hash !== link.hash) history.pushState(null, '', link.hash);
+      target.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'start' });
+      target.setAttribute('tabindex', '-1');
+      target.focus({ preventScroll: true });
+    });
+
+    // 滚轮、触控和边缘回弹交给浏览器；只增强正文阅读的方向键。
+    document.addEventListener('keydown', (event) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      if (!['ArrowUp', 'ArrowDown'].includes(event.key)) return;
+      if (event.target.closest('input, textarea, select, button, summary, [contenteditable], [role="dialog"], .toc')) return;
+      if (!document.querySelector('#search-overlay')?.hidden) return;
+      event.preventDefault();
+      window.scrollBy({ top: event.key === 'ArrowDown' ? 340 : -340, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    });
+
+    const copyUrl = document.querySelector('[data-copy-post-url]');
+    copyUrl?.addEventListener('click', async () => {
+      const label = copyUrl.querySelector('span:last-child');
+      const status = document.querySelector('[data-copy-post-status]');
+      const url = new URL(window.location.href);
+      url.hash = '';
+      try {
+        await navigator.clipboard.writeText(url.href);
+        label.textContent = '已复制';
+        if (status) status.textContent = '文章链接已复制';
+      } catch {
+        label.textContent = '复制失败，请从地址栏复制';
+        if (status) status.textContent = '复制失败，请从地址栏复制';
+      }
+      setTimeout(() => { label.textContent = '复制文章链接'; }, 1800);
     });
   }
 
