@@ -210,7 +210,7 @@ export async function writeDraft(
 
   if (!options.dryRun) {
     await fs.mkdir(path.dirname(filePath), { recursive: true });
-    await fs.writeFile(filePath, content);
+    await fs.writeFile(filePath, content, { flag: 'wx' });
   }
   return { path: filePath, relative, content };
 }

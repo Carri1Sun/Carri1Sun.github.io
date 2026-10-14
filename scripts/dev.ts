@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
+import { editorLink, handleEditor } from './local-editor.ts';
 
 const runBuild = promisify(execFile);
 
@@ -97,8 +98,19 @@ fs.watch(projectRoot, { recursive: true }, (_event, rawFile) => {
 
 /* ---------------------------------- HTTP 服务 ---------------------------------- */
 
-const server = http.createServer((req, res) => {
-  const pathname = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname);
+const server = http.createServer(async (req, res) => {
+  if (![`localhost:${port}`, `127.0.0.1:${port}`].includes(req.headers.host ?? '')) {
+    res.writeHead(403).end('Forbidden');
+    return;
+  }
+  let pathname: string;
+  try {
+    pathname = decodeURIComponent(new URL(req.url ?? '/', 'http://localhost').pathname);
+  } catch {
+    res.writeHead(400).end('Bad request');
+    return;
+  }
+  if (await handleEditor(req, res, pathname)) return;
 
   if (pathname === '/__livereload') {
     res.writeHead(200, {
@@ -134,7 +146,9 @@ const server = http.createServer((req, res) => {
     status = 404; // 与 GitHub Pages 行为一致
   }
 
-  const body = fs.readFileSync(filePath);
+  const body = path.extname(filePath) === '.html'
+    ? fs.readFileSync(filePath, 'utf8').replace('</nav>', `${editorLink}</nav>`)
+    : fs.readFileSync(filePath);
   res.writeHead(status, {
     'Content-Type': MIME[path.extname(filePath)] ?? 'application/octet-stream',
     'Cache-Control': 'no-cache',
@@ -143,7 +157,8 @@ const server = http.createServer((req, res) => {
 });
 
 await rebuild('启动');
-server.listen(port, () => {
+server.listen(port, '127.0.0.1', () => {
   console.log(`博客开发服务器已启动：http://localhost:${port}`);
   console.log('监听 content/、assets/、scripts/ 变更，保存后自动重建并刷新页面。');
+  console.log(`本地写作：http://localhost:${port}/__editor`);
 });

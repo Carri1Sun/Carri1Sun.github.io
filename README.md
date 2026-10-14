@@ -28,11 +28,29 @@ Kaiyi 的个人博客。不依赖 Hexo 或任何博客框架 —— 用 TypeScri
 需要 Node 24+。
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 打开 <http://localhost:4000>。修改 `content/`、`assets/`、`scripts/` 下任意文件会自动重建并刷新页面。
+
+点击导航里的「写作」，或打开 <http://localhost:4000/__editor>，即可在本地创建文章和随笔：
+
+1. 选择文章或随笔，填写标题和正文（支持 Markdown）。文章也可以只填标题，创建空稿。
+2. 文件名、日期自动填写；需要时展开「更多选项」设置分类、标签、摘要、封面或置顶。
+3. 点击「保存并创建文件」，自动生成标准 frontmatter，写入 `content/posts/` 或 `content/notes/`，再点击结果中的预览链接。重名会提示更换文件名，不覆盖已有文件。
+4. 确认内容后自行 commit / push，沿用现有 GitHub Pages 发布流程。
+
+输入时会在当前浏览器保存未提交内容，刷新后恢复。保存成功会清空表单。内容目录里的文件会参与下次发布，当前没有草稿过滤功能。
+
+写作入口、编辑页面和写入接口仅由本地开发服务器提供，服务器只监听本机。它们不会写入 `dist/`，GitHub Pages 上不显示，也不提供写入接口。修改开发服务器代码后需要重新运行 `pnpm run dev`。
+
+也可以直接用已有脚本创建空稿，自动生成日期与字段：
+
+```bash
+pnpm run new:post --title "文章标题" --slug short-title
+pnpm run new:note --slug quick-note --body "随手记下的内容"
+```
 
 ## 写一篇新文章
 
