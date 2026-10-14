@@ -143,53 +143,20 @@ function postCard(post: Post, index = 0): string {
         </article>`;
 }
 
-// 预设封面使用 SVG；配置图片时保留轨道图案作为加载失败的回退。
-function bookCover(post: Post): string {
-  const { preset: motif, image } = post.cover;
-  const art = motif === 'frames'
-    ? '<rect x="25" y="25" width="190" height="120" rx="2"/><rect x="45" y="45" width="190" height="120" rx="2"/><rect x="65" y="65" width="190" height="120" rx="2"/><path d="M137 94l36 23-36 23z" fill="currentColor" stroke="none"/>'
-    : motif === 'orbit'
-    ? Array.from({length: 9}, (_, i) => `<ellipse cx="140" cy="110" rx="${28 + i * 10}" ry="80" transform="rotate(${i * 10} 140 110)"/>`).join('')
-    : motif === 'steps'
-    ? Array.from({length: 7}, (_, i) => `<path d="M${24+i*31} 185V${165-i*22}h31v${20+i*22}"/>`).join('')
-    : Array.from({length: 24}, (_, i) => `<path d="M140 110L${140+105*Math.cos(i*Math.PI/12)} ${110+95*Math.sin(i*Math.PI/12)}"/>`).join('');
-  return `<article class="book-entry">
-    <a class="book-link" href="${esc(post.url)}" aria-label="阅读：${esc(post.title)}">
-      <div class="book-stage">
-        <div class="book book-${motif}">
-          <div class="book-spine" aria-hidden="true"></div>
-          <div class="book-pages" aria-hidden="true"></div>
-          <div class="book-front">
-            <h3 class="book-title" style="--article-transition:${articleTransition(post)}">${esc(post.title)}</h3>
-            <div class="book-art${image ? ' book-art-image' : ''}">
-              <svg viewBox="0 0 280 220" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">${art}</svg>
-              ${image ? `<img class="book-cover-image" src="${esc(image)}" alt="" loading="lazy" decoding="async" data-cover-image>` : ''}
-            </div>
-            <div class="book-bottom"><time datetime="${esc(post.date.iso)}">${esc(post.date.display)}</time></div>
-          </div>
-        </div>
-      </div>
-      <div class="book-caption"><time datetime="${esc(post.date.datetime)}">${esc(post.date.iso)}</time><span>${post.minutes} 分钟 ${icons.arrow}</span></div>
-    </a>
-    <p class="book-excerpt">${esc(post.excerpt)}</p>
+// 首页和归档共用朴素的文章列表。
+function articleItem(post: Post): string {
+  return `<article class="article-item">
+    <h3 class="article-item-title"><a href="${esc(post.url)}">${esc(post.title)}</a></h3>
+    <p class="article-item-excerpt">${esc(post.excerpt)}</p>
+    <time class="article-item-date" datetime="${esc(post.date.datetime)}">${esc(post.date.iso)}</time>
   </article>`;
 }
 
-export function homePage(site: SiteConfig, posts: Post[], total: number, notes: Note[] = []): string {
-  const content = `    <section class="press-intro">
-      <h1 class="sr-only">${esc(site.title)}</h1>
-      <div class="press-description">
-        <p>${sloganHtml(site.subtitle)}</p>
-        <a class="press-about" href="/about/">关于我 ${icons.arrow}</a>
-      </div>
-    </section>
+export function homePage(site: SiteConfig, posts: Post[], total: number): string {
+  const content = `    <h1 class="sr-only">${esc(site.title)}</h1>
     <section class="press-library" aria-labelledby="library-title">
       <div class="library-heading"><h2 id="library-title">文章</h2><div class="library-actions"><span>${String(total).padStart(2, '0')} 篇文章</span><a class="library-more" href="/archives/">查看更多文章 ${icons.arrow}</a></div></div>
-      <div class="bookshelf">${posts.map(bookCover).join('\n')}</div>
-    </section>
-    <section class="home-notes" aria-labelledby="notes-title">
-      <div class="library-heading"><h2 id="notes-title">随笔</h2><div class="library-actions"><span>${String(notes.length).padStart(2, '0')} 条随笔</span><a class="library-more" href="/notes/">查看全部随笔 ${icons.arrow}</a></div></div>
-      <div class="note-papers">${notes.slice(0, 3).map(notePaper).join('\n') || '<p class="notes-empty">还没有随笔。</p>'}</div>
+      <div class="article-list">${posts.map(articleItem).join('\n')}</div>
     </section>`;
   return layout(site, {
     title: site.title, description: `${site.subtitle} ${site.description}`,
@@ -297,7 +264,7 @@ export function archivePage(site: SiteConfig, groups: ArchiveGroup[]): string {
   const total = groups.reduce((sum, group) => sum + group.posts.length, 0);
   const sections = groups.map((group) => `<section class="shelf-year" aria-labelledby="year-${esc(group.year)}">
     <div class="library-heading"><h2 id="year-${esc(group.year)}">${esc(group.year)}</h2><span>${group.posts.length} 篇文章</span></div>
-    <div class="bookshelf">${group.posts.map(bookCover).join('\n')}</div>
+    <div class="article-list">${group.posts.map(articleItem).join('\n')}</div>
   </section>`).join('\n');
   return layout(site, {
     title: `文章 · ${site.title}`, description: site.description,

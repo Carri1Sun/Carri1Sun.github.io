@@ -247,7 +247,7 @@ export async function buildSite({
 
   await writePage(
     path.join(dist, 'index.html'),
-    t.homePage(site, posts.slice(0, Math.min(3, site.postsPerPage)), posts.length, notes)
+    t.homePage(site, posts.slice(0, site.postsPerPage), posts.length)
   );
   await writePage(
     path.join(dist, 'archives', 'index.html'),

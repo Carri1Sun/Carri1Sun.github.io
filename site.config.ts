@@ -34,7 +34,7 @@ const site = {
     { label: '关于', href: '/about/', key: 'about' },
   ],
   // 首页最多展示的文章数，更多文章指向归档页
-  postsPerPage: 3,
+  postsPerPage: 5,
 } satisfies SiteConfig;
 
 export default site;
