@@ -4,7 +4,7 @@ date: 2026-10-18 22:14:22
 author: Kaiyi
 categories: []
 tags: []
-excerpt: ""
+excerpt: "介绍一下我对 Agent Evals 的认知框架"
 ---
 ## 评测的目的
 Agent 这个东西迭代的时候，改动的不确定非常强，有些东西不是说你做了逻辑 A，就一定能产出逻辑 B，具体有两方面的不确定性：

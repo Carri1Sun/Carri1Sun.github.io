@@ -4,7 +4,7 @@ date: 2026-10-11 03:19:24
 author: Kaiyi
 categories: []
 tags: []
-excerpt: ""
+excerpt: "大家在使用 agent 的时候，面对若干个 effort 等级以及琳琅满目的模型列表常常犯选择困难症，我调研了一下这两个事情，主要是看了几篇 anthropic 的 blog，分享给大家我的一些收获"
 ---
 最近读了四篇文章，讲的都是在使用 Claude Code 或者 API 时应该怎么样选择模型以及 effort
 
