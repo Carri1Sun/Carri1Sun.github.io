@@ -1460,3 +1460,36 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
   .page-home .press-library { padding-top:20px; padding-bottom:28px; }
   .page-home .library-heading { margin-bottom:18px; }
 }
+
+/* 文章选区与摘录卡片：Peach & Ink */
+.quote-toolbar{position:fixed;z-index:160;display:flex;align-items:center;padding:5px;background:var(--heading);color:var(--bg);border:1px solid var(--border);box-shadow:var(--shadow-md);border-radius:8px;gap:3px}
+.quote-toolbar button{border:0;background:transparent;color:inherit;padding:8px 14px;font-size:14px;cursor:pointer;border-radius:4px;white-space:nowrap}
+.quote-toolbar button+button{border-left:1px solid var(--muted);border-radius:0 4px 4px 0}
+.quote-toolbar button:hover{background:var(--muted)}
+.quote-toolbar button:focus-visible{outline-color:var(--bg);outline-offset:0}
+.quote-notice{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);max-width:calc(100% - 32px);z-index:250;background:var(--heading);color:var(--bg);padding:10px 18px;font-size:14px;box-shadow:var(--shadow-md);border-radius:6px;pointer-events:none}
+.quote-notice:empty{display:none}
+.quote-dialog{width:min(960px,calc(100% - 48px));max-height:calc(100dvh - 48px);padding:0;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);box-shadow:var(--shadow-lg);overscroll-behavior:contain}
+.quote-dialog::backdrop{background:#17120fcc;backdrop-filter:blur(5px)}
+.quote-dialog-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 28px;border-bottom:1px solid var(--border)}
+.quote-kicker{font:11px/1.5 var(--font-mono);color:var(--muted);letter-spacing:.08em;margin:0 0 6px}
+.quote-dialog h2{font-size:23px;font-weight:500}
+.quote-close{display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;padding:0;border:1px solid var(--border);background:transparent;color:var(--text);border-radius:50%;font-size:28px;line-height:1;cursor:pointer}
+.quote-editor{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:start;gap:32px;padding:28px}
+.quote-preview{min-width:0;padding:14px;background:var(--surface-2);border:1px solid var(--border)}
+.quote-preview img{display:block;width:100%;height:auto;box-shadow:var(--shadow-md);-webkit-touch-callout:default;user-select:auto}
+.quote-render-status{margin:24px 10px;font-size:14px;color:var(--muted)}
+.quote-controls{position:sticky;top:24px;min-width:0}
+.quote-controls label{display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;font-size:16px;font-weight:500}
+.quote-controls label span{font-size:12px;font-weight:400;color:var(--muted)}
+.quote-controls textarea{width:100%;resize:vertical;min-height:140px;max-height:280px;padding:14px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);font:16px/1.8 var(--font-sans)}
+.quote-controls textarea::placeholder{color:var(--muted)}
+.quote-help{margin:10px 0 0;font-size:12px;line-height:1.8;color:var(--muted)}
+.quote-buttons{display:flex;flex-direction:column;gap:10px;margin-top:28px}
+.quote-buttons button{min-height:46px;border:1px solid var(--heading);border-radius:4px;background:var(--heading);color:var(--bg);font-size:14px;cursor:pointer;padding:10px 14px}
+.quote-buttons button+button{color:var(--text);background:transparent}
+.quote-buttons button:disabled{opacity:.5;cursor:wait}
+.quote-export-status{font-size:13px;line-height:1.7;color:var(--muted);margin:12px 0 0}
+@media(any-pointer:coarse){.quote-toolbar{top:calc(var(--quote-viewport-top,100dvh - 80px) - env(safe-area-inset-bottom))!important;left:var(--quote-viewport-center,50%)!important;bottom:auto;transform:translateX(-50%)}.quote-toolbar button{min-height:44px;padding:10px 20px}}
+@media(max-width:640px){.quote-dialog{width:calc(100% - 20px);max-height:calc(100dvh - 24px);border-radius:10px}.quote-dialog-header{padding:16px 20px}.quote-editor{grid-template-columns:1fr;gap:24px;padding:20px}.quote-preview{padding:10px}.quote-controls{position:static}.quote-buttons{margin-top:18px}.quote-kicker{font-size:10px}}
+@media print{.quote-toolbar,.quote-notice,.quote-dialog{display:none!important}}

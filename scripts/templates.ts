@@ -242,6 +242,7 @@ ${navLink(next, '下一篇 →')}
         </div>
       </nav>
     </article>
+    <script src="/assets/quote-share.js" defer></script>
     <button class="reading-mode-toggle" type="button" data-reading-mode-toggle aria-label="显示目录" aria-pressed="false">${icons.menu}</button>
     ${post.toc.length ? `<button class="toc-drawer-toggle" type="button" data-toc-drawer-open aria-label="打开目录" aria-haspopup="dialog" aria-controls="toc-drawer" aria-expanded="false">${icons.menu}</button>
     <dialog class="toc-drawer" id="toc-drawer" aria-labelledby="toc-drawer-heading">
