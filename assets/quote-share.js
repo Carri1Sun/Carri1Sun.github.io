@@ -5,7 +5,6 @@
   if (!article) return;
   const mobile = window.matchMedia('(any-pointer: coarse)');
   const title = document.querySelector('#post-title').textContent;
-  const author = document.querySelector('meta[name="author"]').content;
   const source = document.querySelector('link[rel="canonical"]').href;
   const site = document.querySelector('meta[property="og:site_name"]').content;
   const toolbar = document.createElement('div');
@@ -13,16 +12,16 @@
   toolbar.hidden = true;
   toolbar.setAttribute('role', 'toolbar');
   toolbar.setAttribute('aria-label', '选中文字操作');
-  toolbar.innerHTML = '<button type="button" data-quote-copy>复制</button><button type="button" data-quote-share>分享摘录 ↗</button>';
+  toolbar.innerHTML = '<button type="button" data-quote-copy>复制</button><button type="button" data-quote-share>分享</button>';
   const notice = document.createElement('p');
   notice.className = 'quote-notice';
   notice.setAttribute('role', 'status');
   const dialog = document.createElement('dialog');
   dialog.className = 'quote-dialog';
   dialog.setAttribute('aria-labelledby', 'quote-heading');
-  dialog.innerHTML = `<header class="quote-dialog-header"><div><p class="quote-kicker">WORDS TO KEEP / 留一段话</p><h2 id="quote-heading">分享摘录</h2></div><button type="button" class="quote-close" aria-label="关闭分享">×</button></header>
+  dialog.innerHTML = `<header class="quote-dialog-header"><h2 id="quote-heading">分享</h2><button type="button" class="quote-close" aria-label="关闭分享">×</button></header>
     <div class="quote-editor"><div class="quote-preview"><img alt="分享卡片预览，包含选中的原文、评论和文章来源" hidden><p class="quote-render-status" role="status">正在生成卡片…</p></div>
-    <div class="quote-controls"><label for="quote-comment">写下你的想法 <span>可选</span></label><textarea id="quote-comment" maxlength="200" rows="4" placeholder="这一段，让我想到……" aria-describedby="quote-privacy"></textarea><p id="quote-privacy" class="quote-help">最多 200 字。评论仅用于生成图片，不会发布或上传。</p><div class="quote-buttons"><button type="button" data-quote-save disabled>下载图片</button><button type="button" data-quote-native hidden disabled>分享 / 保存图片</button></div><p class="quote-help quote-save-hint">PNG 图片 · 包含原文、评论与出处</p><p class="quote-export-status" role="status" aria-live="polite"></p></div></div>`;
+    <div class="quote-controls"><label for="quote-comment">写下你的想法 <span>可选</span></label><textarea id="quote-comment" maxlength="200" rows="4" placeholder="这一段，让我想到……" aria-describedby="quote-privacy"></textarea><p id="quote-privacy" class="quote-help">最多 200 字</p><div class="quote-buttons"><button type="button" data-quote-save disabled>下载图片</button><button type="button" data-quote-native hidden disabled>分享 / 保存图片</button></div><p class="quote-help quote-save-hint" hidden>可长按预览图片保存；支持的浏览器也可打开系统分享面板。</p><p class="quote-export-status" role="status" aria-live="polite"></p></div></div>`;
   document.body.append(toolbar, notice, dialog);
   const image = dialog.querySelector('img');
   const comment = dialog.querySelector('textarea');
@@ -120,7 +119,19 @@
       let line = '';
       const chars = segmenter ? Array.from(segmenter.segment(paragraph), (item) => item.segment) : Array.from(paragraph);
       for (const char of chars) {
-        if (line && ctx.measureText(line + char).width > width) { result.push(line); line = ''; }
+        if (line && ctx.measureText(line + char).width > width) {
+          // 闭合标点允许轻微悬挂，避免逗号、句号单独出现在行首。
+          if (/^[，。！？、；：）》」』】〕〉…,.!?;:%）]$/u.test(char) && ctx.measureText(line).width <= width) {
+            line += char;
+            continue;
+          }
+          // 尽量保留完整英文单词，并把行尾的开括号移到下一行。
+          const word = /^[A-Za-z0-9]$/.test(char) ? line.match(/[A-Za-z0-9]+$/)?.[0] : '';
+          const opening = line.match(/[（(《「『【〔〈“‘]$/u)?.[0];
+          const carry = opening || (word && word.length < line.length && ctx.measureText(word + char).width <= width ? word : '');
+          result.push(carry ? line.slice(0, -carry.length) : line);
+          line = carry || '';
+        }
         line += char;
       }
       result.push(line);
@@ -135,6 +146,10 @@
     renderStatus.textContent = '正在生成卡片…';
     status.textContent = '';
     try {
+      // Canvas 不会触发 CSS 字体下载，先显式加载；仅分享原文使用宋体。
+      let serifLoaded = true;
+      try { await document.fonts.load('400 36px "Quote Serif"', quote); }
+      catch { serifLoaded = false; }
       await document.fonts.ready;
       if (version !== revision || !dialog.open) return;
       const canvas = document.createElement('canvas');
@@ -144,47 +159,60 @@
       const color = (name) => css.getPropertyValue(name).trim();
       const font = css.getPropertyValue('--font-sans');
       const setFont = (size, weight = 400) => { ctx.font = `${weight} ${size}px ${font}`; };
-      setFont(30);
-      const quoteLines = lines(ctx, quote, 592);
-      setFont(23);
-      const commentLines = comment.value.trim() ? lines(ctx, comment.value.trim(), 552) : [];
-      setFont(23, 500);
-      const titleLines = lines(ctx, title, 592);
-      setFont(16);
-      const sourceLines = lines(ctx, source, 592);
-      const quoteBottom = 202 + quoteLines.length * 49;
-      const commentHeight = commentLines.length ? 91 + commentLines.length * 37 : 0;
-      const footerTop = quoteBottom + commentHeight + 35;
-      const height = footerTop + 116 + titleLines.length * 35 + sourceLines.length * 25;
-      // 限制像素总量，兼顾 iOS Canvas 内存限制；短卡片导出 2 倍分辨率。
+      const serif = '"Quote Serif", "Songti SC", "Noto Serif CJK SC", "STSong", serif';
+      const quoteSize = Array.from(quote).length <= 48 ? 40 : Array.from(quote).length <= 110 ? 34 : 30;
+      const quoteLeading = Math.round(quoteSize * 1.75);
+      const setQuoteFont = () => { ctx.font = `400 ${quoteSize}px ${serif}`; };
+      setQuoteFont();
+      const quoteLines = lines(ctx, quote, 568);
+      setFont(22);
+      const commentLines = comment.value.trim() ? lines(ctx, comment.value.trim(), 512) : [];
+      setFont(21, 500);
+      const titleLines = lines(ctx, title, 568);
+      setFont(14);
+      const sourceLines = lines(ctx, source, 568);
+      const quoteTop = 120;
+      const quoteBottom = quoteTop + quoteLines.length * quoteLeading;
+      const commentTop = quoteBottom + 40;
+      const commentHeight = commentLines.length ? 64 + commentLines.length * 37 : 0;
+      const footerTop = Math.max(quoteBottom + (commentHeight ? 40 + commentHeight : 0) + 76, 360);
+      const height = footerTop + 136 + titleLines.length * 32 + sourceLines.length * 23;
       const scale = Math.min(2, Math.sqrt(12000000 / (720 * height)));
       canvas.width = Math.ceil(720 * scale);
       canvas.height = Math.ceil(height * scale);
       ctx.scale(scale, scale);
-      ctx.fillStyle = color('--bg'); ctx.fillRect(0, 0, 720, height);
-      ctx.fillStyle = color('--surface'); ctx.fillRect(24, 24, 672, height - 48);
-      ctx.strokeStyle = color('--border'); ctx.strokeRect(24.5, 24.5, 671, height - 49);
+
+      // 单张暖色纸面，保留主题色，避免多层装饰框。
+      const paper = ctx.createLinearGradient(0, 0, 720, height);
+      paper.addColorStop(0, color('--surface'));
+      paper.addColorStop(1, color('--bg'));
+      ctx.fillStyle = paper; ctx.fillRect(0, 0, 720, height);
       ctx.fillStyle = color('--muted'); setFont(15, 500);
-      ctx.fillText('READING NOTES / 阅读摘录', 64, 80);
-      ctx.strokeStyle = color('--border');
-      ctx.beginPath(); ctx.moveTo(64, 103); ctx.lineTo(656, 103); ctx.stroke();
-      ctx.fillStyle = color('--heading');
-      ctx.font = '86px Georgia, serif'; ctx.fillText('“', 58, 189);
-      setFont(30); ctx.fillStyle = color('--text');
-      quoteLines.forEach((line, i) => ctx.fillText(line, 64, 220 + i * 49));
+      ctx.fillText('摘录', 76, 76);
+      setQuoteFont(); ctx.fillStyle = color('--text');
+      quoteLines.forEach((line, i) => ctx.fillText(line, 76, quoteTop + quoteSize + i * quoteLeading));
+
+      // 带底色的批注区，用主题色区分评论与原文。
       if (commentLines.length) {
-        ctx.fillStyle = color('--surface-2'); ctx.fillRect(64, quoteBottom + 25, 592, commentHeight - 5);
-        ctx.fillStyle = color('--muted'); setFont(14, 500); ctx.fillText('COMMENT / 我的想法', 84, quoteBottom + 61);
-        ctx.fillStyle = color('--text'); setFont(23);
-        commentLines.forEach((line, i) => ctx.fillText(line, 84, quoteBottom + 104 + i * 37));
+        ctx.fillStyle = color('--surface-2');
+        ctx.fillRect(76, commentTop, 568, commentHeight);
+        ctx.strokeStyle = color('--border'); ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.moveTo(76, commentTop); ctx.lineTo(76, commentTop + commentHeight); ctx.stroke();
+        ctx.fillStyle = color('--muted'); setFont(12, 500);
+        ctx.fillText('COMMENT', 104, commentTop + 28);
+        setFont(22);
+        commentLines.forEach((line, i) => ctx.fillText(line, 104, commentTop + 66 + i * 37));
       }
-      ctx.strokeStyle = color('--border');
-      ctx.beginPath(); ctx.moveTo(64, footerTop); ctx.lineTo(656, footerTop); ctx.stroke();
-      setFont(16); ctx.fillStyle = color('--muted'); ctx.fillText(`摘自 ${author} 的文章`, 64, footerTop + 38);
-      setFont(23, 500); ctx.fillStyle = color('--heading');
-      titleLines.forEach((line, i) => ctx.fillText(line, 64, footerTop + 76 + i * 35));
-      setFont(16); ctx.fillStyle = color('--muted');
-      sourceLines.forEach((line, i) => ctx.fillText(line, 64, footerTop + 85 + titleLines.length * 35 + i * 25));
+
+      // 短线收尾，文章来源作为安静的落款。
+      ctx.strokeStyle = color('--border'); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(76, footerTop); ctx.lineTo(120, footerTop); ctx.stroke();
+      setFont(15); ctx.fillStyle = color('--muted');
+      ctx.fillText(`摘录自 ${site}`, 76, footerTop + 38);
+      setFont(21, 500); ctx.fillStyle = color('--heading');
+      titleLines.forEach((line, i) => ctx.fillText(line, 76, footerTop + 76 + i * 32));
+      setFont(14); ctx.fillStyle = color('--muted');
+      sourceLines.forEach((line, i) => ctx.fillText(line, 76, footerTop + 91 + titleLines.length * 32 + i * 23));
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
       if (!blob) throw new Error('blob');
       if (version !== revision || !dialog.open) return;
@@ -201,6 +229,7 @@
       native.hidden = !shareable;
       save.disabled = native.disabled = false;
       renderStatus.hidden = true;
+      if (!serifLoaded) status.textContent = '字体暂未加载，已使用系统衬线字体。';
     } catch {
       if (version !== revision) return;
       renderStatus.textContent = '图片生成失败，请重新打开分享重试。';
@@ -215,9 +244,7 @@
     image.hidden = true;
     toolbar.hidden = true;
     dialog.showModal();
-    dialog.querySelector('.quote-save-hint').textContent = mobile.matches
-      ? '可长按预览图片保存；支持的浏览器也可打开系统分享面板。'
-      : 'PNG 图片 · 包含原文、评论与出处';
+    dialog.querySelector('.quote-save-hint').hidden = !mobile.matches;
     void render();
   });
   comment.addEventListener('input', render);
