@@ -1461,8 +1461,8 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
   .page-home .library-heading { margin-bottom:18px; }
 }
 
-/* 仅在打开分享时显式加载，文章页面继续使用原有字体。 */
-@font-face{font-family:'Quote Serif';font-style:normal;font-weight:400;font-display:swap;src:url('/assets/fonts/noto-serif-sc-regular.woff2') format('woff2')}
+/* 子集化宋体（GB2312 与全站文章用字）。仅当系统没有可用宋体时，打开分享才加载。 */
+@font-face{font-family:'Quote Serif';font-style:normal;font-weight:400;font-display:swap;src:url('/assets/fonts/noto-serif-sc-subset.woff2') format('woff2')}
 /* 文章选区与摘录卡片：Peach & Ink */
 .quote-toolbar{position:fixed;z-index:160;display:flex;align-items:center;padding:5px;background:var(--heading);color:var(--bg);border:1px solid var(--border);box-shadow:var(--shadow-md);border-radius:8px;gap:3px}
 .quote-toolbar button{border:0;background:transparent;color:inherit;padding:8px 14px;font-size:14px;cursor:pointer;border-radius:4px;white-space:nowrap}
@@ -1472,6 +1472,7 @@ html[data-theme='light'] .theme-icon-sun,html[data-theme='dark'] .theme-icon-moo
 .quote-notice{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);max-width:calc(100% - 32px);z-index:250;background:var(--heading);color:var(--bg);padding:10px 18px;font-size:14px;box-shadow:var(--shadow-md);border-radius:6px;pointer-events:none}
 .quote-notice:empty{display:none}
 .quote-dialog{width:min(960px,calc(100% - 48px));max-height:calc(100dvh - 48px);padding:0;border:1px solid var(--border);border-radius:12px;background:var(--bg);color:var(--text);box-shadow:var(--shadow-lg);overscroll-behavior:contain}
+.quote-dialog:focus{outline:none}
 .quote-dialog::backdrop{background:#17120fcc;backdrop-filter:blur(5px)}
 .quote-dialog-header{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 28px;border-bottom:1px solid var(--border)}
 .quote-dialog h2{font-size:23px;font-weight:500}

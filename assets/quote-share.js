@@ -6,20 +6,55 @@
   const mobile = window.matchMedia('(any-pointer: coarse)');
   const title = document.querySelector('#post-title').textContent;
   const source = document.querySelector('link[rel="canonical"]').href;
-  const site = document.querySelector('meta[property="og:site_name"]').content;
+  const linkText = source.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const siteName = document.querySelector('meta[property="og:site_name"]').content;
+
+  // 卡片版式（CSS 像素，画布宽 720，按 2 倍导出）。
+  const WIDTH = 720;
+  const PAD = 76;
+  const TEXT_W = 568;
+  const COMMENT_TEXT_W = 512;
+  const COMMENT_SIZE = 30;
+  const COMMENT_LEADING = 46;
+  const FOOT_TEXT_W = 404;
+  const URL_SIZE = 20;
+  const URL_LEADING = 30;
+  const QR_BOX = 140;
+  const QR_SIZE = 110;
+  const QUOTE_TOP = 176;
+  const MIN_HEIGHT = 960; // 最小 3:4，内容更多时自动加高。
+
+  // 宋体优先使用系统自带字体（macOS / iOS 的 Songti SC、Windows 的 SimSun 等），
+  // 没有时才加载子集化的 Noto Serif SC。
+  const systemSerifCandidates = ['"Songti SC"', 'STSong', 'SimSun', '"Noto Serif CJK SC"'];
+  const detectSystemSerif = () => {
+    const probe = document.createElement('canvas').getContext('2d');
+    if (!probe) return '';
+    const sample = '摘录Aa0';
+    probe.font = '40px monospace';
+    const fallback = probe.measureText(sample).width;
+    return systemSerifCandidates.find((name) => {
+      probe.font = `40px ${name}, monospace`;
+      return probe.measureText(sample).width !== fallback;
+    }) || '';
+  };
+  const systemSerif = detectSystemSerif();
+  const serif = systemSerif ? `${systemSerif}, serif` : '"Quote Serif", "Noto Serif CJK SC", serif';
+
   const toolbar = document.createElement('div');
   toolbar.className = 'quote-toolbar';
   toolbar.hidden = true;
   toolbar.setAttribute('role', 'toolbar');
   toolbar.setAttribute('aria-label', '选中文字操作');
-  toolbar.innerHTML = '<button type="button" data-quote-copy>复制</button><button type="button" data-quote-share>分享</button>';
+  toolbar.innerHTML = '<button type="button" data-quote-copy>复制</button><button type="button" data-quote-share>生成卡片</button>';
   const notice = document.createElement('p');
   notice.className = 'quote-notice';
   notice.setAttribute('role', 'status');
   const dialog = document.createElement('dialog');
   dialog.className = 'quote-dialog';
+  dialog.tabIndex = -1;
   dialog.setAttribute('aria-labelledby', 'quote-heading');
-  dialog.innerHTML = `<header class="quote-dialog-header"><h2 id="quote-heading">分享</h2><button type="button" class="quote-close" aria-label="关闭分享">×</button></header>
+  dialog.innerHTML = `<header class="quote-dialog-header"><h2 id="quote-heading">分享卡片</h2><button type="button" class="quote-close" aria-label="关闭分享">×</button></header>
     <div class="quote-editor"><div class="quote-preview"><img alt="分享卡片预览，包含选中的原文、评论和文章来源" hidden><p class="quote-render-status" role="status">正在生成卡片…</p></div>
     <div class="quote-controls"><label for="quote-comment">写下你的想法 <span>可选</span></label><textarea id="quote-comment" maxlength="200" rows="4" placeholder="这一段，让我想到……" aria-describedby="quote-privacy"></textarea><p id="quote-privacy" class="quote-help">最多 200 字</p><div class="quote-buttons"><button type="button" data-quote-save disabled>下载图片</button><button type="button" data-quote-native hidden disabled>分享 / 保存图片</button></div><p class="quote-help quote-save-hint" hidden>可长按预览图片保存；支持的浏览器也可打开系统分享面板。</p><p class="quote-export-status" role="status" aria-live="polite"></p></div></div>`;
   document.body.append(toolbar, notice, dialog);
@@ -138,6 +173,40 @@
     }
     return result;
   }
+
+  // 头像只加载一次；失败时卡片照常生成，只是没有头像。
+  let avatarPromise;
+  function loadAvatar() {
+    avatarPromise ??= (() => {
+      const src = document.querySelector('.avatar-coin-front img')?.getAttribute('src');
+      if (!src) return Promise.resolve(null);
+      const img = new Image();
+      img.src = src;
+      return img.decode().then(() => img, () => null);
+    })();
+    return avatarPromise;
+  }
+
+  // 二维码库按需加载（与词云相同的做法），纯前端生成，不发送文章地址。
+  let qrPromise;
+  function loadQr() {
+    if (window.QrCreator) return Promise.resolve(true);
+    qrPromise ??= new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = '/assets/vendor/qr-creator.min.js';
+      script.onload = () => resolve(!!window.QrCreator);
+      script.onerror = () => { qrPromise = null; resolve(false); };
+      document.head.append(script);
+    });
+    return qrPromise;
+  }
+  function qrCanvas(text, size) {
+    const qr = document.createElement('canvas');
+    qr.width = qr.height = size;
+    QrCreator.render({ text, radius: 0, ecLevel: 'M', fill: '#000000', background: '#ffffff', size }, qr);
+    return qr;
+  }
+
   async function render() {
     const version = ++revision;
     file = null;
@@ -146,73 +215,102 @@
     renderStatus.textContent = '正在生成卡片…';
     status.textContent = '';
     try {
-      // Canvas 不会触发 CSS 字体下载，先显式加载；仅分享原文使用宋体。
+      // 只有系统没有宋体时才下载子集字体；Canvas 不会触发 CSS 字体下载，需要显式加载。
       let serifLoaded = true;
-      try { await document.fonts.load('400 36px "Quote Serif"', quote); }
-      catch { serifLoaded = false; }
+      if (!systemSerif) {
+        try { await document.fonts.load('400 36px "Quote Serif"', quote); }
+        catch { serifLoaded = false; }
+      }
       await document.fonts.ready;
+      const [avatar, hasQr] = await Promise.all([loadAvatar(), loadQr()]);
       if (version !== revision || !dialog.open) return;
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) throw new Error('canvas');
       const css = getComputedStyle(document.documentElement);
       const color = (name) => css.getPropertyValue(name).trim();
-      const font = css.getPropertyValue('--font-sans');
-      const setFont = (size, weight = 400) => { ctx.font = `${weight} ${size}px ${font}`; };
-      const serif = '"Quote Serif", "Songti SC", "Noto Serif CJK SC", "STSong", serif';
-      const quoteSize = Array.from(quote).length <= 48 ? 40 : Array.from(quote).length <= 110 ? 34 : 30;
+      const sans = css.getPropertyValue('--font-sans');
+      const setSans = (size, weight = 400) => { ctx.font = `${weight} ${size}px ${sans}`; };
+
+      // 先测量，再决定卡片高度。
+      const text = comment.value.trim();
+      const quoteChars = Array.from(quote).length;
+      const quoteSize = quoteChars <= 48 ? 40 : quoteChars <= 110 ? 34 : 32;
       const quoteLeading = Math.round(quoteSize * 1.75);
-      const setQuoteFont = () => { ctx.font = `400 ${quoteSize}px ${serif}`; };
-      setQuoteFont();
-      const quoteLines = lines(ctx, quote, 568);
-      setFont(22);
-      const commentLines = comment.value.trim() ? lines(ctx, comment.value.trim(), 512) : [];
-      setFont(21, 500);
-      const titleLines = lines(ctx, title, 568);
-      setFont(14);
-      const sourceLines = lines(ctx, source, 568);
-      const quoteTop = 120;
-      const quoteBottom = quoteTop + quoteLines.length * quoteLeading;
-      const commentTop = quoteBottom + 40;
-      const commentHeight = commentLines.length ? 64 + commentLines.length * 37 : 0;
-      const footerTop = Math.max(quoteBottom + (commentHeight ? 40 + commentHeight : 0) + 76, 360);
-      const height = footerTop + 136 + titleLines.length * 32 + sourceLines.length * 23;
-      const scale = Math.min(2, Math.sqrt(12000000 / (720 * height)));
-      canvas.width = Math.ceil(720 * scale);
+      const setQuote = () => { ctx.font = `400 ${quoteSize}px ${serif}`; };
+      setQuote();
+      const quoteLines = lines(ctx, quote, TEXT_W);
+      setSans(COMMENT_SIZE);
+      const commentLines = text ? lines(ctx, text, COMMENT_TEXT_W) : [];
+      setSans(28, 500);
+      const titleLines = lines(ctx, title, FOOT_TEXT_W);
+      setSans(URL_SIZE);
+      const urlLines = lines(ctx, linkText, FOOT_TEXT_W);
+
+      const quoteBottom = QUOTE_TOP + quoteLines.length * quoteLeading;
+      const commentTop = quoteBottom + 48;
+      const commentHeight = commentLines.length ? 70 + commentLines.length * COMMENT_LEADING : 0;
+      const bodyBottom = commentHeight ? commentTop + commentHeight : quoteBottom;
+      const footerHeight = Math.max(titleLines.length * 38 + 14 + urlLines.length * URL_LEADING, hasQr ? QR_BOX : 0);
+      const height = Math.ceil(Math.max(MIN_HEIGHT, bodyBottom + 84 + footerHeight + 64));
+      const footerTop = height - 64 - footerHeight; // 落款贴底。
+      // 短摘录时，正文在顶部与落款之间偏上居中，避免中间大片空白；内容撑满时不位移。
+      const shift = Math.max(0, Math.floor((footerTop - 84 - bodyBottom) * 0.35));
+
+      const scale = Math.min(2, Math.sqrt(12000000 / (WIDTH * height)));
+      canvas.width = Math.ceil(WIDTH * scale);
       canvas.height = Math.ceil(height * scale);
       ctx.scale(scale, scale);
 
-      // 单张暖色纸面，保留主题色，避免多层装饰框。
-      const paper = ctx.createLinearGradient(0, 0, 720, height);
-      paper.addColorStop(0, color('--surface'));
-      paper.addColorStop(1, color('--bg'));
-      ctx.fillStyle = paper; ctx.fillRect(0, 0, 720, height);
-      ctx.fillStyle = color('--muted'); setFont(15, 500);
-      ctx.fillText('摘录', 76, 76);
-      setQuoteFont(); ctx.fillStyle = color('--text');
-      quoteLines.forEach((line, i) => ctx.fillText(line, 76, quoteTop + quoteSize + i * quoteLeading));
+      // 纯色纸面：与弹窗底色拉开明度差，边界清楚，PNG 也更小。
+      ctx.fillStyle = color('--surface');
+      ctx.fillRect(0, 0, WIDTH, height);
 
-      // 带底色的批注区，用主题色区分评论与原文。
-      if (commentLines.length) {
+      // 页眉：头像 + 站名，右侧标注“摘录”。
+      if (avatar) {
+        ctx.save();
+        ctx.beginPath(); ctx.arc(PAD + 24, 84, 24, 0, Math.PI * 2); ctx.clip();
+        ctx.drawImage(avatar, PAD, 60, 48, 48);
+        ctx.restore();
+      }
+      ctx.fillStyle = color('--heading'); setSans(24, 500);
+      ctx.fillText(siteName, PAD + 60, 92);
+      ctx.fillStyle = color('--muted'); setSans(18, 500);
+      ctx.textAlign = 'right'; ctx.fillText('摘录', WIDTH - PAD, 92); ctx.textAlign = 'left';
+
+      // 原文
+      ctx.fillStyle = color('--text'); setQuote();
+      quoteLines.forEach((line, i) => ctx.fillText(line, PAD, QUOTE_TOP + shift + quoteSize + i * quoteLeading));
+
+      // 评论：正文颜色，底色区分于原文；左侧细条作为引用线。
+      if (commentHeight) {
+        const cTop = commentTop + shift;
         ctx.fillStyle = color('--surface-2');
-        ctx.fillRect(76, commentTop, 568, commentHeight);
-        ctx.strokeStyle = color('--border'); ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.moveTo(76, commentTop); ctx.lineTo(76, commentTop + commentHeight); ctx.stroke();
-        ctx.fillStyle = color('--muted'); setFont(12, 500);
-        ctx.fillText('COMMENT', 104, commentTop + 28);
-        setFont(22);
-        commentLines.forEach((line, i) => ctx.fillText(line, 104, commentTop + 66 + i * 37));
+        ctx.fillRect(PAD, cTop, TEXT_W, commentHeight);
+        ctx.fillStyle = color('--border');
+        ctx.fillRect(PAD, cTop, 2, commentHeight);
+        ctx.fillStyle = color('--muted'); setSans(16, 500);
+        ctx.fillText('COMMENT', PAD + 28, cTop + 38);
+        ctx.fillStyle = color('--text'); setSans(COMMENT_SIZE);
+        commentLines.forEach((line, i) => ctx.fillText(line, PAD + 28, cTop + 84 + i * COMMENT_LEADING));
       }
 
-      // 短线收尾，文章来源作为安静的落款。
+      // 页脚：短线、标题与链接在左，二维码在右。
       ctx.strokeStyle = color('--border'); ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(76, footerTop); ctx.lineTo(120, footerTop); ctx.stroke();
-      setFont(15); ctx.fillStyle = color('--muted');
-      ctx.fillText(`摘录自 ${site}`, 76, footerTop + 38);
-      setFont(21, 500); ctx.fillStyle = color('--heading');
-      titleLines.forEach((line, i) => ctx.fillText(line, 76, footerTop + 76 + i * 32));
-      setFont(14); ctx.fillStyle = color('--muted');
-      sourceLines.forEach((line, i) => ctx.fillText(line, 76, footerTop + 91 + titleLines.length * 32 + i * 23));
+      ctx.beginPath(); ctx.moveTo(PAD, footerTop - 36 + 0.5); ctx.lineTo(PAD + 44, footerTop - 36 + 0.5); ctx.stroke();
+      ctx.fillStyle = color('--heading'); setSans(28, 500);
+      titleLines.forEach((line, i) => ctx.fillText(line, PAD, footerTop + 28 + i * 38));
+      ctx.fillStyle = color('--muted'); setSans(URL_SIZE);
+      urlLines.forEach((line, i) => ctx.fillText(line, PAD, footerTop + titleLines.length * 38 + 14 + URL_SIZE + i * URL_LEADING));
+      if (hasQr) {
+        // 二维码保持黑白，并留足安静区，任何主题下都能扫。
+        const x = WIDTH - PAD - QR_BOX;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x, footerTop, QR_BOX, QR_BOX);
+        const qr = qrCanvas(source, Math.round(QR_SIZE * scale));
+        ctx.drawImage(qr, x + (QR_BOX - QR_SIZE) / 2, footerTop + (QR_BOX - QR_SIZE) / 2, QR_SIZE, QR_SIZE);
+      }
+
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
       if (!blob) throw new Error('blob');
       if (version !== revision || !dialog.open) return;
@@ -221,11 +319,12 @@
       imageUrl = nextUrl;
       image.src = imageUrl;
       image.hidden = false;
-      image.alt = `${site} · ${title}。摘录：${quote}${comment.value.trim() ? `。我的想法：${comment.value.trim()}` : ''}`;
+      image.alt = `${siteName} · ${title}。摘录：${quote}${text ? `。我的想法：${text}` : ''}`;
       if (oldUrl) URL.revokeObjectURL(oldUrl);
       file = new File([blob], `${location.pathname.split('/').filter(Boolean).pop()}-摘录.png`, { type: 'image/png' });
+      // 系统分享只在触屏设备上显示；桌面端保留下载。
       let shareable = false;
-      try { shareable = !!navigator.share && !!navigator.canShare?.({ files: [file] }); } catch { /* 使用下载和长按保存。 */ }
+      try { shareable = mobile.matches && !!navigator.share && !!navigator.canShare?.({ files: [file] }); } catch { /* 使用下载和长按保存。 */ }
       native.hidden = !shareable;
       save.disabled = native.disabled = false;
       renderStatus.hidden = true;
@@ -244,6 +343,8 @@
     image.hidden = true;
     toolbar.hidden = true;
     dialog.showModal();
+    // 桌面端直接进入输入框；触屏设备不自动弹出键盘，焦点留在弹窗上。
+    (mobile.matches ? dialog : comment).focus({ preventScroll: true });
     dialog.querySelector('.quote-save-hint').hidden = !mobile.matches;
     void render();
   });
