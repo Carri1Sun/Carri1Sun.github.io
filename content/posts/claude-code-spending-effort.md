@@ -66,7 +66,9 @@ https://claude.com/resources/articles/claude-model-and-effort-level-in-claude-co
 
 Model 代表什么？Model 技术上 model 代表了 the set of fixed weights，感性点理解就是 the overall capability range of the model
 
-Effort 不仅仅是 thinking time（跟前面的调研也对上了），Effort 同时代表 Claude 打算读度搜好文件，使用多少工具以及打算进行多少步骤。
+Effort 不仅仅是 thinking time（跟前面的调研也对上了），Effort 同时代表 Claude 打算读和搜多少文件，使用多少工具以及打算进行多少步骤，还有进行多少检查。
+
+这其实意味着，选了 effort 之后，同一个模型的行为也会调整，而不仅仅是 thinking time
 
 对日常的任务用小模型，对复杂或者模糊的任务（ambiguous，这个我觉得非常重要）用大模型，Anthropic 建议你基于你的工作类型去选择偏好并且适应它，不要针对逐个任务去调整 model
 
@@ -74,11 +76,33 @@ Effort 不仅仅是 thinking time（跟前面的调研也对上了），Effort �
 
 ### Claude Code 的 Effort 和 Model 选项
 
+更好的 model 就是更聪明，模型更聪明是个含糊的概念，但是这里我觉得也不需要详细展开，它是个太全面的概念，就是能力更强。
 
+effort 这里这里又介绍了一下，跟前面一样，就不说了。
+
+这里提了一个区别，low effort 还意味着一个事情，它会选择问用户怎么选项，而不是自己花很多 token 搞明白。
+
+原则上来说，如果使用者对这个系统很了解，能提供很精准的 context，那么一个任务完成下来 low effort 会更好。
+
+那么为什么同一个 benchmark，low 和 high effort 会存在区别而且往往是 high 更好？
 
 ### 模型是怎么工作的
 
+这一节它讲了讲模型是咋工作的
 
+effort 会影响权重吗？
+
+*steering* 和 *teaching* 的区别
+
+If a library didn't exist when the model was trained, it isn't in the weights. You can put the docs in context and Claude will use them, but that's *steering*, not *teaching*. Claude’s response will only be influenced for that request; the underlying model hasn’t retained the information.
+
+So the **model setting** decides *which weights* handle your request, and it also decides what each output token costs.
+
+What it doesn't decide is how many tokens get generated. That number can vary a lot for the same prompt, depending on how much work Claude decides to do.
+
+This is what **effort** **level** controls: *how much work* Claude decides to do for each turn.
+
+### effort 是怎么工作的
 
 
 
