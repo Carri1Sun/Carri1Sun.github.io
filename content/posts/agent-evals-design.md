@@ -6,9 +6,13 @@ categories: []
 tags: []
 excerpt: "介绍一下我对 General Agent Evals 的认知框架"
 ---
+大概从 2026 年早些时候我开始接触评测工作，过去半年给 Tabbit Browser，offloop.org、persom 等以及一些朋友的创业项目做过评测或者进行过交流，这些项目大部分是类似一个 General Agent 的形态，这篇文章主要分享我做 General Agent 评测工作时的一些经验，后文把 General Agent 简写成 Agent。
+
+这些经验的积累和写作过程中跟我的朋友们进行过很多讨论 @yuj1a @钟十六 @尚晋 @是酸菜鱼吗 @aaaaa野人 @ashsely 可以在即刻上找到他们
+
 ### 我们先给 Agent 评测下一个定义。
 
-评测也是测，评测就是一个测试工作，这篇文章主要分享我做 General Agent 评测工作时的一些经验，后文把 General Agent 简写成 Agent。
+评测也是测，评测就是一个测试工作。
 
 跟软件测试工作相比，模型以及 Agent 这些东西迭代的时候，改动的不确定非常强，有些东西不是说你做了逻辑 A，就一定能产出逻辑 B，具体有两方面的不确定性：
 
