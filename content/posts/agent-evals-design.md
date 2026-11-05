@@ -6,7 +6,7 @@ categories: []
 tags: []
 excerpt: "介绍一下我对 General Agent Evals 的认知框架"
 ---
-大概从 2026 年早些时候我开始接触评测工作，过去半年给 Tabbit Browser，offloop.org、persom 等以及一些朋友的创业项目做过评测或者进行过交流，这些项目大部分是类似一个 General Agent 的形态，这篇文章主要分享我做 General Agent 评测工作时的一些经验，后文把 General Agent 简写成 Agent。
+这篇文章是 2026 年 10 月写的，大概从 2026 年早些时候我开始接触评测工作，过去半年给 Tabbit Browser，offloop.org、persom 等以及一些朋友的创业项目做过评测或者进行过交流，这些项目大部分是类似一个 General Agent 的形态，这篇文章主要分享我做 General Agent 评测工作时的一些经验，后文把 General Agent 简写成 Agent。
 
 这些经验的积累和写作过程中跟我的朋友们进行过很多讨论 @yuj1a @钟十六 @尚晋 @是酸菜鱼吗 @aaaaa野人 @ashsely 可以在即刻上找到他们
 
