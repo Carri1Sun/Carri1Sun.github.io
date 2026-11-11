@@ -221,4 +221,4 @@ Evals 和 Harness 设计在上一代的工作中的策略产品设计工作最�
 
 模型真发展好了，删了也不心疼，甚至你还可以把这个东西卖给模型帮模型发展。
 
-1. 大量 Harness 本身就是由模型训练塑造的，现在的 Harness Engineering 工作就是 Trajectory RL 这条训练路径的产物。
+2. 大量 Harness 本身就是由模型训练塑造的，现在的 Harness Engineering 工作就是 Trajectory RL 这条训练路径的产物。
